@@ -1,0 +1,177 @@
+/* Basic styling for the unilevel system demo */
+
+:root {
+  --bg: #f7f9fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --brand: #2563eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-brand {
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.nav-actions button,
+.button {
+  font-size: 0.95rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: var(--brand);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.button:hover,
+.nav-actions button:hover {
+  background: #1d4ed8;
+}
+
+.card,
+.page-header {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.card a,
+.card button {
+  display: inline-block;
+  text-decoration: none;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--brand);
+  color: white;
+  border: none;
+}
+
+.card a:hover,
+.card button:hover {
+  background: #1d4ed8;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+}
+
+.page-header .back {
+  font-size: 0.95rem;
+  text-decoration: none;
+  color: var(--brand);
+}
+
+form {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+form label {
+  display: block;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+form input {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+form button {
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.cards .card {
+  text-align: center;
+}
+
+.profile {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.profile-picture img {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+.tree {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: white;
+  min-height: 200px;
+  overflow-x: auto;
+}
+
+.tree-node {
+  padding: 0.75rem;
+  border: 1px solid rgba(147, 197, 253, 0.75);
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  background: rgba(239, 246, 255, 0.7);
+}
+
+.tree-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.tree-children {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  border-left: 2px dashed rgba(148, 163, 184, 0.7);
+}
