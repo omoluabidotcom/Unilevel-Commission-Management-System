@@ -1,21 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin - Commissions</title>
-  <link rel="stylesheet" href="../css/custom.css" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CommissionHub — Commission Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --blue:#1a6ef5; --blue-light:#e8f0fe; --green:#16a34a; --orange:#ea580c; --text-primary:#111827; --text-secondary:#6b7280; --text-muted:#9ca3af; --border:#e5e7eb; --bg:#f9fafb; --white:#fff; --sidebar-w:240px; --radius:12px; --shadow:0 1px 4px rgba(0,0,0,.07),0 0 1px rgba(0,0,0,.06); }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text-primary); display:flex; min-height:100vh; font-size:14px; }
+  .sidebar { width:var(--sidebar-w); min-height:100vh; background:var(--white); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; z-index:100; padding:22px 14px 30px; }
+  .brand { display:flex; align-items:center; gap:10px; padding:0 6px; margin-bottom:28px; }
+  .brand-icon { width:36px; height:36px; background:var(--blue); border-radius:10px; display:grid; place-items:center; flex-shrink:0; }
+  .brand-name { font-size:16px; font-weight:700; letter-spacing:-.3px; }
+  .nav { display:flex; flex-direction:column; gap:2px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; cursor:pointer; color:var(--text-secondary); font-weight:500; font-size:14px; transition:background .15s,color .15s; text-decoration:none; user-select:none; }
+  .nav-item:hover { background:var(--bg); color:var(--text-primary); }
+  .nav-item.active { background:var(--blue); color:#fff; }
+  .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; }
+  .topbar { background:var(--white); border-bottom:1px solid var(--border); padding:14px 28px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .breadcrumb { font-size:12px; color:var(--text-muted); margin-bottom:3px; display:flex; align-items:center; gap:6px; }
+  .breadcrumb a { color:var(--text-muted); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--blue); }
+  .breadcrumb .sep { color:var(--border); }
+  .topbar-left h1 { font-size:22px; font-weight:700; letter-spacing:-.4px; }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .notif-btn { position:relative; width:36px; height:36px; border-radius:50%; border:1.5px solid var(--border); background:var(--white); display:grid; place-items:center; cursor:pointer; transition:border-color .15s; }
+  .notif-btn:hover { border-color:var(--blue); }
+  .notif-dot { position:absolute; top:6px; right:6px; width:8px; height:8px; background:#ef4444; border-radius:50%; border:2px solid #fff; }
+  .avatar { width:36px; height:36px; background:var(--blue); border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; font-size:14px; }
+  .user-pill { display:flex; align-items:center; gap:9px; cursor:pointer; }
+  .user-info .name { font-weight:600; font-size:13px; line-height:1.2; }
+  .user-info .role { font-size:11px; color:var(--text-muted); }
+  .content { padding:26px 28px; display:flex; flex-direction:column; gap:22px; }
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; animation:fadeUp .35s both; }
+  .stat-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px; box-shadow:var(--shadow); display:flex; align-items:flex-start; justify-content:space-between; transition:box-shadow .2s,transform .2s; }
+  .stat-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.09); transform:translateY(-1px); }
+  .stat-left .label { font-size:13px; color:var(--text-secondary); font-weight:500; margin-bottom:10px; }
+  .stat-left .value { font-size:28px; font-weight:700; letter-spacing:-.6px; margin-bottom:6px; }
+  .stat-left .sub { font-size:12.5px; font-weight:500; }
+  .sub.orange { color:var(--orange); }
+  .sub.blue { color:var(--blue); }
+  .sub.green { color:var(--green); }
+  .stat-icon-wrap { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; }
+  .stat-icon-wrap.orange-bg { background:#fff7ed; }
+  .stat-icon-wrap.blue-bg { background:#eff6ff; }
+  .stat-icon-wrap.green-bg { background:#f0fdf4; }
+  .controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; animation:fadeUp .35s .05s both; }
+  .search-wrap { flex:1; min-width:220px; position:relative; }
+  .search-wrap svg { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); pointer-events:none; }
+  .search-input { width:100%; padding:11px 16px 11px 42px; border:1.5px solid var(--border); border-radius:10px; font-family:inherit; font-size:13.5px; color:var(--text-primary); background:var(--white); outline:none; transition:border-color .15s,box-shadow .15s; }
+  .search-input::placeholder { color:var(--text-muted); }
+  .search-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-light); }
+  .select-wrap { position:relative; }
+  .select-wrap select { appearance:none; -webkit-appearance:none; padding:11px 42px 11px 18px; border:1.5px solid var(--border); border-radius:10px; font-family:inherit; font-size:13.5px; font-weight:500; color:var(--text-primary); background:var(--white); cursor:pointer; outline:none; min-width:140px; transition:border-color .15s,box-shadow .15s; }
+  .select-wrap select:focus { border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-light); }
+  .select-wrap svg { position:absolute; right:14px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--text-secondary); }
+  .table-header { display:flex; align-items:center; justify-content:space-between; }
+  .table-title { font-size:16px; font-weight:700; letter-spacing:-.2px; }
+  .table-total { font-size:13px; color:var(--text-muted); }
+  .table-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; animation:fadeUp .35s .1s both; }
+  table { width:100%; border-collapse:collapse; }
+  thead tr { background:#f8fafc; border-bottom:1px solid var(--border); }
+  thead th { text-align:left; padding:12px 18px; font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:.6px; text-transform:uppercase; white-space:nowrap; cursor:pointer; user-select:none; }
+  thead th:hover { color:var(--text-primary); }
+  thead th .si { display:inline-block; margin-left:4px; opacity:.35; transition:opacity .15s; }
+  thead th.sort-asc .si, thead th.sort-desc .si { opacity:1; color:var(--blue); }
+  thead th.sort-desc .si { transform:rotate(180deg); display:inline-block; }
+  tbody tr { border-bottom:1px solid #f1f5f9; transition:background .12s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:#f8fafc; }
+  tbody td { padding:15px 18px; font-size:14px; vertical-align:middle; }
+  .td-amount { font-weight:600; }
+  .badge { display:inline-flex; align-items:center; padding:4px 14px; border-radius:99px; font-size:12.5px; font-weight:500; }
+  .badge.pending { background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
+  .badge.approved { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+  .badge.paid { background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
+  .badge.rejected { background:#fee2e2; color:#dc2626; border:1px solid #fecaca; }
+  .action-cell { display:flex; align-items:center; gap:8px; }
+  .btn-approve, .btn-markpaid { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; border:none; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s,box-shadow .15s,transform .1s; white-space:nowrap; }
+  .btn-approve { background:var(--blue); color:#fff; }
+  .btn-approve:hover { background:#1560d8; box-shadow:0 4px 12px rgba(26,110,245,.3); transform:translateY(-1px); }
+  .btn-markpaid { background:var(--green); color:#fff; }
+  .btn-markpaid:hover { background:#15803d; box-shadow:0 4px 12px rgba(22,163,74,.3); transform:translateY(-1px); }
+  .completed-text { font-size:13px; color:var(--text-muted); font-weight:500; }
+  .no-results { text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .no-results svg { display:block; margin:0 auto 12px; opacity:.3; }
+  .pagination { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-top:1px solid var(--border); flex-wrap:wrap; gap:10px; }
+  .page-info { font-size:13px; color:var(--text-secondary); }
+  .page-btns { display:flex; gap:4px; }
+  .page-btn { width:32px; height:32px; border-radius:6px; border:1.5px solid var(--border); background:var(--white); font-size:13px; font-family:inherit; font-weight:500; color:var(--text-secondary); cursor:pointer; display:grid; place-items:center; transition:all .15s; }
+  .page-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .page-btn.active { background:var(--blue); border-color:var(--blue); color:#fff; }
+  .page-btn:disabled { opacity:.35; cursor:not-allowed; pointer-events:none; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; place-items:center; z-index:200; backdrop-filter:blur(3px); }
+  .modal-overlay.open { display:grid; animation:fadeIn .2s both; }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  .modal { background:var(--white); border-radius:16px; width:100%; max-width:420px; margin:16px; box-shadow:0 20px 60px rgba(0,0,0,.18); animation:slideUp .25s both; }
+  @keyframes slideUp { from{transform:translateY(20px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  .confirm-body { text-align:center; padding:28px 28px 12px; }
+  .confirm-icon { width:52px; height:52px; border-radius:50%; display:grid; place-items:center; margin:0 auto 14px; }
+  .confirm-icon.blue { background:#eff6ff; }
+  .confirm-icon.green { background:#dcfce7; }
+  .confirm-body h3 { font-size:16px; font-weight:700; margin-bottom:8px; }
+  .confirm-body p { font-size:13.5px; color:var(--text-secondary); line-height:1.55; }
+  .modal-footer { padding:12px 24px 22px; display:flex; gap:10px; justify-content:flex-end; }
+  .btn-cancel { padding:10px 20px; border:1.5px solid var(--border); border-radius:8px; background:var(--white); font-family:inherit; font-size:13.5px; font-weight:500; color:var(--text-secondary); cursor:pointer; transition:border-color .15s; }
+  .btn-cancel:hover { border-color:var(--text-secondary); }
+  .btn-confirm { padding:10px 22px; border:none; border-radius:8px; font-family:inherit; font-size:13.5px; font-weight:600; cursor:pointer; color:#fff; transition:background .15s,box-shadow .15s; }
+  .btn-confirm.blue { background:var(--blue); }
+  .btn-confirm.blue:hover { background:#1560d8; box-shadow:0 4px 12px rgba(26,110,245,.3); }
+  .btn-confirm.green { background:var(--green); }
+  .btn-confirm.green:hover { background:#15803d; box-shadow:0 4px 12px rgba(22,163,74,.3); }
+  .toast-wrap { position:fixed; bottom:24px; right:24px; z-index:300; display:flex; flex-direction:column; gap:8px; }
+  .toast { display:flex; align-items:center; gap:10px; background:#1e293b; color:#fff; border-radius:10px; padding:12px 18px; font-size:13.5px; font-weight:500; box-shadow:0 8px 30px rgba(0,0,0,.2); animation:slideRight .3s both; min-width:240px; }
+  .toast.success svg { color:#4ade80; }
+  @keyframes slideRight { from{transform:translateX(40px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes slideOut { to{transform:translateX(40px);opacity:0;} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+  tbody tr { animation:fadeUp .2s both; }
+</style>
 </head>
-<body>
-  <header class="page-header">
-    <a href="../dashboard.html" class="back">← Dashboard</a>
-    <h1>Commissions</h1>
-  </header>
-
-  <main class="container">
-    <p>This section will display commission reports and payouts.</p>
+<body class="admin-app">
+  <aside class="sidebar" id="adminSidebar"></aside>
+  <script src="../js/admin-menu.js"></script>
+  <div class="main">
+  <header class="topbar"><div class="topbar-left"><div class="breadcrumb"><a href="dashboard.html">Dashboard</a><span class="sep">›</span><span>Commission</span></div><h1>Commission Management</h1></div><div class="topbar-right"><button class="notif-btn"><div class="notif-dot"></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button><div class="user-pill"><div class="avatar">A</div><div class="user-info"><div class="name">Admin User</div><div class="role">Administrator</div></div></div></div></header>
+  <main class="content">
+    <div class="stat-grid"><div class="stat-card"><div class="stat-left"><div class="label">Pending Commissions</div><div class="value" id="statPending">$0.00</div><div class="sub orange" id="subPending">0 commissions pending</div></div><div class="stat-icon-wrap orange-bg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-card"><div class="stat-left"><div class="label">Approved Commissions</div><div class="value" id="statApproved">$0.00</div><div class="sub blue" id="subApproved">0 commissions approved</div></div><div class="stat-icon-wrap blue-bg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div><div class="stat-card"><div class="stat-left"><div class="label">Paid Commissions</div><div class="value" id="statPaid">$0.00</div><div class="sub green" id="subPaid">0 commission paid</div></div><div class="stat-icon-wrap green-bg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div></div>
+    <div class="controls"><div class="search-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" id="searchInput" type="text" placeholder="Search by name..."/></div><div class="select-wrap"><select id="statusFilter"><option value="">All Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="paid">Paid</option><option value="rejected">Rejected</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div><div class="select-wrap"><select id="periodFilter"><option value="this-month">This Month</option><option value="last-month">Last Month</option><option value="last-3">Last 3 Months</option><option value="all">All Time</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>
+    <div><div class="table-header" style="margin-bottom:12px;"><h2 class="table-title">All Commissions</h2><span class="table-total" id="tableTotal">Total: 0 commissions</span></div><div class="table-card"><table><thead><tr><th data-col="name">Distributor Name <span class="si">↑</span></th><th data-col="month">Month <span class="si">↑</span></th><th data-col="purchase">Purchase Amount <span class="si">↑</span></th><th data-col="pct">Commission % <span class="si">↑</span></th><th data-col="amount">Commission Amount <span class="si">↑</span></th><th data-col="status">Status <span class="si">↑</span></th><th>Actions</th></tr></thead><tbody id="tableBody"></tbody></table><div id="pagination"></div></div></div>
   </main>
-
-  <script src="../js/utils.js"></script>
+</div>
+<div class="modal-overlay" id="confirmModal"><div class="modal"><div class="confirm-body"><div class="confirm-icon" id="confirmIcon"></div><h3 id="confirmTitle"></h3><p id="confirmMsg"></p></div><div class="modal-footer"><button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-confirm" id="confirmBtn"></button></div></div></div>
+<div class="toast-wrap" id="toastWrap"></div>
+<script>
+var commissions=[{id:1,name:'John Doe',month:'March 2026',purchase:150,pct:15,status:'pending'},{id:2,name:'Sarah Wilson',month:'March 2026',purchase:200,pct:15,status:'approved'},{id:3,name:'David Brown',month:'March 2026',purchase:120,pct:15,status:'paid'},{id:4,name:'Alice Cooper',month:'March 2026',purchase:180,pct:15,status:'pending'},{id:5,name:'Bob Martin',month:'March 2026',purchase:160,pct:15,status:'approved'},{id:6,name:'Grace Miller',month:'February 2026',purchase:200,pct:15,status:'paid'},{id:7,name:'Henry Clark',month:'February 2026',purchase:140,pct:15,status:'paid'},{id:8,name:'Emma Garcia',month:'February 2026',purchase:220,pct:15,status:'approved'},{id:9,name:'Olivia Martinez',month:'January 2026',purchase:170,pct:15,status:'paid'},{id:10,name:'James Anderson',month:'January 2026',purchase:130,pct:15,status:'pending'}];commissions.forEach(function(c){c.amount=parseFloat((c.purchase*c.pct/100).toFixed(2));});var PER_PAGE=10,currentPage=1,filtered=[],pendingAction=null;function fmt(n){return '$'+n.toFixed(2);}function cap(s){return s?s[0].toUpperCase()+s.slice(1):'';}function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}function toast(msg){var wrap=document.getElementById('toastWrap');var el=document.createElement('div');el.className='toast success';el.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'+esc(msg);wrap.appendChild(el);setTimeout(function(){el.style.animation='slideOut .3s both';setTimeout(function(){el.remove();},300);},3000);}function closeModal(){document.getElementById('confirmModal').classList.remove('open');pendingAction=null;}document.getElementById('confirmModal').addEventListener('click',function(e){if(e.target===this)closeModal();});function updateStats(){var pending=commissions.filter(function(c){return c.status==='pending';});var approved=commissions.filter(function(c){return c.status==='approved';});var paid=commissions.filter(function(c){return c.status==='paid';});var sumP=pending.reduce(function(a,c){return a+c.amount;},0);var sumA=approved.reduce(function(a,c){return a+c.amount;},0);var sumPd=paid.reduce(function(a,c){return a+c.amount;},0);document.getElementById('statPending').textContent=fmt(sumP);document.getElementById('statApproved').textContent=fmt(sumA);document.getElementById('statPaid').textContent=fmt(sumPd);document.getElementById('subPending').textContent=pending.length+' commission'+(pending.length!==1?'s':'')+' pending';document.getElementById('subApproved').textContent=approved.length+' commission'+(approved.length!==1?'s':'')+' approved';document.getElementById('subPaid').textContent=paid.length+' commission'+(paid.length!==1?'s':'')+' paid';}
+function inPeriod(c,period){var now=new Date();var parts=c.month.split(' ');var months={January:1,February:2,March:3,April:4,May:5,June:6,July:7,August:8,September:9,October:10,November:11,December:12};var cDate=new Date(parseInt(parts[1]),months[parts[0]]-1,1);var nowDate=new Date(now.getFullYear(),now.getMonth(),1);var diff=(nowDate-cDate)/(1000*60*60*24*30);if(period==='this-month')return diff<1&&diff>=0;if(period==='last-month')return diff>=1&&diff<2;if(period==='last-3')return diff>=0&&diff<3;return true;}function applyFilters(){var q=document.getElementById('searchInput').value.toLowerCase().trim();var st=document.getElementById('statusFilter').value;var pd=document.getElementById('periodFilter').value;filtered=commissions.filter(function(c){var mq=!q||c.name.toLowerCase().includes(q);var ms=!st||c.status===st;var mp=inPeriod(c,pd);return mq&&ms&&mp;});currentPage=1;render();}
+function render(){updateStats();var total=filtered.length;document.getElementById('tableTotal').textContent='Total: '+total+' commission'+(total!==1?'s':'');var tbody=document.getElementById('tableBody');var start=(currentPage-1)*PER_PAGE;var page=filtered.slice(start,start+PER_PAGE);var svgApprove='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';var svgDollar='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>';if(!page.length){tbody.innerHTML='<tr><td colspan="7"><div class="no-results"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>No commissions match your filters.</div></td></tr>';} else {tbody.innerHTML=page.map(function(c,i){var actionCell='';if(c.status==='pending'){actionCell='<button class="btn-approve" onclick="confirmApprove('+c.id+')">'+svgApprove+'Approve</button>';} else if(c.status==='approved'){actionCell='<button class="btn-markpaid" onclick="confirmMarkPaid('+c.id+')">'+svgDollar+'Mark Paid</button>';} else {actionCell='<span class="completed-text">Completed</span>';}return '<tr style="animation-delay:'+(i*25)+'ms"><td>'+esc(c.name)+'</td><td>'+esc(c.month)+'</td><td>$'+c.purchase.toFixed(2)+'</td><td>'+c.pct+'%</td><td class="td-amount">$'+c.amount.toFixed(2)+'</td><td><span class="badge '+c.status+'">'+cap(c.status)+'</span></td><td><div class="action-cell">'+actionCell+'</div></td></tr>';}).join('');}renderPagination();}
+function renderPagination(){var total=filtered.length;var pages=Math.ceil(total/PER_PAGE);var pg=document.getElementById('pagination');if(pages<=1){pg.innerHTML='';return;}var s=(currentPage-1)*PER_PAGE+1;var e=Math.min(currentPage*PER_PAGE,total);var prev='<button class="page-btn" onclick="goPage('+(currentPage-1)+')" '+(currentPage===1?'disabled':'')+'><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>';var next='<button class="page-btn" onclick="goPage('+(currentPage+1)+')" '+(currentPage===pages?'disabled':'')+'><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>';var btns=prev;for(var p=1;p<=pages;p++){if(pages>7&&p>2&&p<pages-1&&Math.abs(p-currentPage)>1){if(p===3||p===pages-2)btns+='<button class="page-btn" disabled>…</button>';continue;}btns+='<button class="page-btn '+(p===currentPage?'active':'')+'" onclick="goPage('+p+')">'+p+'</button>';}btns+=next;pg.innerHTML='<div class="pagination"><span class="page-info">Showing '+s+'–'+e+' of '+total+'</span><div class="page-btns">'+btns+'</div></div>';}function goPage(p){var pages=Math.ceil(filtered.length/PER_PAGE);if(p<1||p>pages)return;currentPage=p;render();}
+function confirmApprove(id){var c=commissions.find(function(x){return x.id===id;});if(!c)return;var icon=document.getElementById('confirmIcon');icon.className='confirm-icon blue';document.getElementById('confirmIconSvg').innerHTML='<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';document.getElementById('confirmTitle').textContent='Approve Commission';document.getElementById('confirmMsg').textContent='Approve the commission of $'+c.amount.toFixed(2)+' for '+c.name+'? This will move it to Approved status.';var btn=document.getElementById('confirmBtn');btn.textContent='Approve';btn.className='btn-confirm blue';pendingAction=function(){var idx=commissions.findIndex(function(x){return x.id===id;});commissions[idx].status='approved';closeModal();applyFilters();toast(c.name+"'s commission approved successfully.");};btn.onclick=pendingAction;document.getElementById('confirmModal').classList.add('open');}
+function confirmMarkPaid(id){var c=commissions.find(function(x){return x.id===id;});if(!c)return;var icon=document.getElementById('confirmIcon');icon.className='confirm-icon green';document.getElementById('confirmIconSvg').innerHTML='<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>';document.getElementById('confirmTitle').textContent='Mark as Paid';document.getElementById('confirmMsg').textContent='Mark the commission of $'+c.amount.toFixed(2)+' for '+c.name+' as paid? This action cannot be undone.';var btn=document.getElementById('confirmBtn');btn.textContent='Mark Paid';btn.className='btn-confirm green';pendingAction=function(){var idx=commissions.findIndex(function(x){return x.id===id;});commissions[idx].status='paid';closeModal();applyFilters();toast(c.name+"'s commission marked as paid.");};btn.onclick=pendingAction;document.getElementById('confirmModal').classList.add('open');}
+document.querySelectorAll('thead th[data-col]').forEach(function(th){th.addEventListener('click',function(){var col=th.dataset.col;var dir=th.classList.contains('sort-asc')?'desc':'asc';document.querySelectorAll('thead th').forEach(function(t){t.classList.remove('sort-asc','sort-desc');});th.classList.add(dir==='asc'?'sort-asc':'sort-desc');filtered.sort(function(a,b){var va,vb;if(col==='name'){va=a.name;vb=b.name;}else if(col==='month'){va=a.month;vb=b.month;}else if(col==='purchase'){va=a.purchase;vb=b.purchase;}else if(col==='amount'){va=a.amount;vb=b.amount;}else if(col==='status'){va=a.status;vb=b.status;}else{va=a.pct;vb=b.pct;}if(va<vb)return dir==='asc'?-1:1;if(va>vb)return dir==='asc'?1:-1;return 0;});currentPage=1;render();});});document.getElementById('searchInput').addEventListener('input',applyFilters);document.getElementById('statusFilter').addEventListener('change',applyFilters);document.getElementById('periodFilter').addEventListener('change',applyFilters);applyFilters();
+</script>
 </body>
 </html>
