@@ -1,6 +1,6 @@
 # Unilevel Commission System
 
-A starter scaffold for a unilevel commission tracking web application.
+A Unilevel commission tracking web application.
 
 ## Getting started
 

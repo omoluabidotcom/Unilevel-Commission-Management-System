@@ -1,21 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin - Distributors</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CommissionHub — Distributor Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../css/custom.css" />
 </head>
-<body>
-  <header class="page-header">
-    <a href="../dashboard.html" class="back">← Dashboard</a>
-    <h1>Distributors</h1>
-  </header>
+<body class="admin-app">
 
-  <main class="container">
-    <p>This section will list distributors and allow you to manage their profiles.</p>
-  </main>
+  <aside class="sidebar" id="adminSidebar"></aside>
 
-  <script src="../js/utils.js"></script>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Distributors</div>
+        <h1>Distributor Management</h1>
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn">
+          <div class="notif-dot"></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
+        <div class="user-pill">
+          <div class="avatar">A</div>
+          <div class="user-info">
+            <div class="name">Admin User</div>
+            <div class="role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- TOP ROW -->
+      <div class="content-toprow">
+        <p>Manage all distributors in your network</p>
+        <button class="btn-add" onclick="openAddModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Distributor
+        </button>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="controls">
+        <div class="search-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="search-input" id="searchInput" type="text" placeholder="Search by name, email or phone..."/>
+        </div>
+        <div class="select-wrap">
+          <select id="statusFilter">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+          </select>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="select-wrap">
+          <select id="sortSelect">
+            <option value="name-asc">Sort by Name</option>
+            <option value="name-desc">Name (Z–A)</option>
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+          </select>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-header">
+        <h2 class="table-title">All Distributors</h2>
+        <span class="showing-count" id="showingCount"></span>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th data-col="name">Name <span class="si">↑</span></th>
+              <th data-col="email">Email <span class="si">↑</span></th>
+              <th data-col="phone">Phone <span class="si">↑</span></th>
+              <th data-col="sponsor">Sponsor (Upline) <span class="si">↑</span></th>
+              <th data-col="status">Status <span class="si">↑</span></th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODALS ETC (will be populated by JS) -->
+  <div class="modal-overlay" id="formModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="formModalTitle">Add Distributor</h3>
+        <button class="modal-close" onclick="closeModal('formModal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" id="f_firstName" placeholder="John"/>
+            <span class="form-error" id="e_firstName"></span>
+          </div>
+          <div class="form-group">
+            <label>Last Name *</label>
+            <input type="text" id="f_lastName" placeholder="Doe"/>
+            <span class="form-error" id="e_lastName"></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="f_email" placeholder="john@example.com"/>
+          <span class="form-error" id="e_email"></span>
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="text" id="f_phone" placeholder="+1 234 567 8900"/>
+          <span class="form-error" id="e_phone"></span>
+        </div>
+        <div class="form-group">
+          <label>Sponsor (Upline)</label>
+          <select id="f_sponsor"><option value="">— None —</option></select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="f_status">
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('formModal')">Cancel</button>
+        <button class="btn-save" id="formSaveBtn" onclick="saveDistributor()">Add Distributor</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="viewModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Distributor Details</h3>
+        <button class="modal-close" onclick="closeModal('viewModal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="view-grid" id="viewGrid"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('viewModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="confirm-body">
+        <div class="confirm-icon" id="confirmIcon">
+          <svg id="confirmIconSvg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        </div>
+        <h3 id="confirmTitle"></h3>
+        <p id="confirmMsg"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('confirmModal')">Cancel</button>
+        <button class="btn-save" id="confirmBtn"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script src="../js/admin-menu.js"></script>
+  <script src="../js/admin-distributors.js"></script>
 </body>
 </html>

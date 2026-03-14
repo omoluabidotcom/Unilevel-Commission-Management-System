@@ -3,27 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unilevel System - Login</title>
+  <title>CommissionHub — Sign In</title>
   <link rel="stylesheet" href="css/custom.css" />
 </head>
-<body>
-  <main class="container">
-    <header>
-      <h1>Unilevel Commission</h1>
-      <p>Login to access your dashboard.</p>
-    </header>
+<body class="login-page">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-logo" aria-hidden="true"></div>
+        <h1>CommissionHub</h1>
+      </div>
 
-    <form id="loginForm" class="card">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" required />
+      <h2>Welcome back</h2>
+      <p class="login-subtitle">Sign in to your account to continue</p>
 
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" required />
+      <form id="loginForm" class="login-form">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" autocomplete="email" required placeholder="admin@example.com" />
 
-      <button type="submit">Login</button>
-    </form>
-  </main>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
 
+        <button type="submit" class="primary">Sign in</button>
+
+        <div class="login-footer">
+          <a href="#" class="forgot">Forgot password?</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
 </body>
 </html>

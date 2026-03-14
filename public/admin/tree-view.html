@@ -6,17 +6,42 @@
   <title>Admin - Tree View</title>
   <link rel="stylesheet" href="../css/custom.css" />
 </head>
-<body>
-  <header class="page-header">
-    <a href="../dashboard.html" class="back">← Dashboard</a>
-    <h1>Tree View</h1>
-  </header>
+<body class="admin-app">
+  <aside class="sidebar" id="adminSidebar"></aside>
 
-  <main class="container">
-    <p>Render the unilevel structure below:</p>
-    <div id="treeRoot" class="tree"></div>
-  </main>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Tree View</div>
+        <h1>Tree View</h1>
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn">
+          <div class="notif-dot"></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <div class="user-pill">
+          <div class="avatar">A</div>
+          <div class="user-info">
+            <div class="name">Admin User</div>
+            <div class="role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </header>
 
+    <main class="content">
+      <div class="container">
+        <p>Render the unilevel structure below:</p>
+        <div id="treeRoot" class="tree"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/admin-menu.js"></script>
   <script src="../js/tree.js"></script>
   <script src="../js/utils.js"></script>
 </body>
