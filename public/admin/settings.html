@@ -1,21 +1,562 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin - Settings</title>
-  <link rel="stylesheet" href="../css/custom.css" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CommissionHub — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue:       #1a6ef5;
+    --blue-light: #e8f0fe;
+    --green:      #16a34a;
+    --orange:     #ea580c;
+    --text-primary:   #111827;
+    --text-secondary: #6b7280;
+    --text-muted:     #9ca3af;
+    --border:         #e5e7eb;
+    --bg:             #f9fafb;
+    --white:          #ffffff;
+    --sidebar-w:      240px;
+    --radius:         12px;
+    --shadow:         0 1px 4px rgba(0,0,0,.07), 0 0 1px rgba(0,0,0,.06);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w); min-height: 100vh;
+    background: var(--white); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; z-index: 100;
+    padding: 22px 14px 30px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; margin-bottom: 28px; }
+  .brand-icon { width: 36px; height: 36px; background: var(--blue); border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
+  .brand-name { font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
+  .nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 8px; cursor: pointer; color: var(--text-secondary);
+    font-weight: 500; font-size: 14px; transition: background .15s, color .15s;
+    text-decoration: none; user-select: none;
+  }
+  .nav-item:hover { background: var(--bg); color: var(--text-primary); }
+  .nav-item.active { background: var(--blue); color: #fff; }
+
+  /* ── MAIN ── */
+  .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 14px 28px; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 50;
+  }
+  .breadcrumb { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+  .breadcrumb a { color: var(--text-muted); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--blue); }
+  .breadcrumb .sep { color: var(--border); }
+  .topbar-left h1 { font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .notif-btn {
+    position: relative; width: 36px; height: 36px; border-radius: 50%;
+    border: 1.5px solid var(--border); background: var(--white);
+    display: grid; place-items: center; cursor: pointer; transition: border-color .15s;
+  }
+  .notif-btn:hover { border-color: var(--blue); }
+  .notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid #fff; }
+  .avatar { width: 36px; height: 36px; background: var(--blue); border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 14px; }
+  .user-pill { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+  .user-info .name { font-weight: 600; font-size: 13px; line-height: 1.2; }
+  .user-info .role { font-size: 11px; color: var(--text-muted); }
+
+  /* ── CONTENT ── */
+  .content { padding: 26px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── CONTENT HEADER ── */
+  .content-header {
+    display: flex; align-items: center; justify-content: space-between;
+    animation: fadeUp .3s both;
+  }
+  .content-header p { font-size: 13.5px; color: var(--text-secondary); }
+
+  .btn-save {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--blue); color: #fff; border: none;
+    border-radius: 10px; padding: 11px 22px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background .15s, box-shadow .15s, transform .15s;
+    white-space: nowrap;
+  }
+  .btn-save:hover { background: #1560d8; box-shadow: 0 4px 16px rgba(26,110,245,.35); transform: translateY(-1px); }
+  .btn-save:active { transform: translateY(0); }
+
+  /* ── SETTINGS CARD ── */
+  .settings-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 26px 28px;
+  }
+  .settings-card:nth-child(2) { animation: fadeUp .35s .04s both; }
+  .settings-card:nth-child(3) { animation: fadeUp .35s .08s both; }
+  .settings-card:nth-child(4) { animation: fadeUp .35s .12s both; }
+
+  /* ── CARD TITLE ── */
+  .card-title-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .card-icon.blue   { background: #eff6ff; }
+  .card-icon.orange { background: #fff7ed; }
+  .card-icon.green  { background: #f0fdf4; }
+  .card-icon.purple { background: #f5f3ff; }
+  .card-title { font-size: 16px; font-weight: 700; letter-spacing: -.25px; }
+
+  /* ── FORM FIELD ── */
+  .field-group { margin-bottom: 22px; }
+  .field-group:last-child { margin-bottom: 0; }
+  .field-label { font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+  .field-hint  { font-size: 12.5px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+
+  /* Input with prefix/suffix */
+  .input-wrap { display: flex; align-items: center; position: relative; }
+  .input-prefix, .input-suffix {
+    display: flex; align-items: center; padding: 0 14px;
+    height: 44px; background: #f8fafc; border: 1.5px solid var(--border);
+    color: var(--text-secondary); font-size: 14px; font-weight: 500;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .input-prefix { border-right: none; border-radius: 8px 0 0 8px; }
+  .input-suffix { border-left: none;  border-radius: 0 8px 8px 0; }
+
+  .field-input {
+    flex: 1; height: 44px; padding: 0 14px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: inherit; font-size: 14px; color: var(--text-primary);
+    background: var(--white); outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-light); z-index: 1; }
+  .field-input.has-prefix  { border-radius: 0 8px 8px 0; }
+  .field-input.has-suffix  { border-radius: 8px 0 0 8px; }
+  .field-input.has-both    { border-radius: 0; }
+
+  /* Select */
+  .field-select {
+    width: 100%; height: 44px; padding: 0 40px 0 14px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: inherit; font-size: 14px; color: var(--text-primary);
+    background: var(--white); outline: none; cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field-select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-light); }
+  .select-wrap { position: relative; }
+  .select-wrap svg { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-secondary); }
+
+  /* Divider */
+  .field-divider { border: none; border-top: 1px solid #f1f5f9; margin: 20px 0; }
+
+  /* ── TOGGLE SWITCH ── */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 4px 0;
+  }
+  .toggle-row + .toggle-row { margin-top: 20px; }
+
+  .toggle-info .toggle-label { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .toggle-info .toggle-desc  { font-size: 13px; color: var(--text-secondary); }
+
+  .toggle {
+    position: relative; width: 46px; height: 26px; flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track {
+    position: absolute; inset: 0; border-radius: 99px;
+    background: #d1d5db; cursor: pointer;
+    transition: background .25s;
+  }
+  .toggle-track::after {
+    content: ''; position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%; background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    transition: transform .25s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--blue); }
+  .toggle input:checked + .toggle-track::after { transform: translateX(20px); }
+  .toggle input:focus + .toggle-track { box-shadow: 0 0 0 3px var(--blue-light); }
+
+  /* ── TWO COL GRID ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; }
+
+  /* TOAST */
+  .toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    display: flex; align-items: center; gap: 10px;
+    background: #1e293b; color: #fff; border-radius: 10px;
+    padding: 12px 18px; font-size: 13.5px; font-weight: 500;
+    box-shadow: 0 8px 30px rgba(0,0,0,.2); animation: slideRight .3s both; min-width: 240px;
+  }
+  .toast svg { color: #4ade80; flex-shrink: 0; }
+  @keyframes slideRight { from{transform:translateX(40px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes slideOut   { to{transform:translateX(40px);opacity:0;} }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+
+  /* Unsaved indicator */
+  .unsaved-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #f59e0b; display: inline-block;
+    margin-left: 8px; vertical-align: middle;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+</style>
 </head>
 <body>
-  <header class="page-header">
-    <a href="../dashboard.html" class="back">← Dashboard</a>
-    <h1>Settings</h1>
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    </div>
+    <span class="brand-name">CommissionHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="dashboard.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="distributors.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Distributors
+    </a>
+    <a class="nav-item" href="commissions.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Commission
+    </a>
+    <a class="nav-item" href="purchases.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      Purchases
+    </a>
+    <a class="nav-item" href="admin-management.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Admin Management
+    </a>
+    <a class="nav-item" href="notifications.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notifications
+    </a>
+    <a class="nav-item active" href="#">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+    <a class="nav-item" href="profile.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </a>
+    <a class="nav-item" href="#" onclick="logout()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </a>
+  </nav>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">
+        <a href="dashboard.html">Dashboard</a>
+        <span class="sep">›</span>
+        <span>Settings</span>
+      </div>
+      <h1>Settings</h1>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn">
+        <div class="notif-dot"></div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <div class="user-pill">
+        <div class="avatar">A</div>
+        <div class="user-info">
+          <div class="name">Admin User</div>
+          <div class="role">Administrator</div>
+        </div>
+      </div>
+    </div>
   </header>
 
-  <main class="container">
-    <p>This section will contain configuration and system settings.</p>
-  </main>
+  <!-- CONTENT -->
+  <main class="content">
 
-  <script src="../js/utils.js"></script>
+    <!-- CONTENT HEADER -->
+    <div class="content-header">
+      <p>Manage system configuration and preferences</p>
+      <button class="btn-save" id="saveBtn" onclick="saveSettings()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Changes
+      </button>
+    </div>
+
+    <!-- ── COMMISSION SETTINGS ── -->
+    <div class="settings-card">
+      <div class="card-title-row">
+        <div class="card-icon blue">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h2 class="card-title">Commission Settings</h2>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Minimum Monthly Purchase Requirement</div>
+        <div class="input-wrap">
+          <div class="input-prefix">$</div>
+          <input class="field-input has-prefix" type="number" id="minPurchase" value="100" min="0" step="1" oninput="markUnsaved()"/>
+        </div>
+        <div class="field-hint">Distributors must meet this minimum to qualify for commissions</div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Commission Percentage</div>
+        <div class="input-wrap">
+          <input class="field-input has-suffix" type="number" id="commPct" value="15" min="0" max="100" step="0.1" oninput="markUnsaved()"/>
+          <div class="input-suffix">%</div>
+        </div>
+        <div class="field-hint">Percentage of downline purchases paid as commission</div>
+      </div>
+    </div>
+
+    <!-- ── NOTIFICATION SETTINGS ── -->
+    <div class="settings-card">
+      <div class="card-title-row">
+        <div class="card-icon orange">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <h2 class="card-title">Notification Settings</h2>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">Email Notifications</div>
+          <div class="toggle-desc">Receive email notifications for important updates</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="emailNotif" checked onchange="markUnsaved()"/>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">Push Notifications</div>
+          <div class="toggle-desc">Receive push notifications in your browser</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="pushNotif" onchange="markUnsaved()"/>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+
+      <hr class="field-divider"/>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">New Distributor Alerts</div>
+          <div class="toggle-desc">Get notified when a new distributor registers</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="distAlert" checked onchange="markUnsaved()"/>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">Commission Processed Alerts</div>
+          <div class="toggle-desc">Get notified when commissions are processed</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="commAlert" checked onchange="markUnsaved()"/>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">Below Minimum Threshold Alerts</div>
+          <div class="toggle-desc">Alert when distributors fall below minimum purchase</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="minAlert" checked onchange="markUnsaved()"/>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ── SYSTEM SETTINGS ── -->
+    <div class="settings-card">
+      <div class="card-title-row">
+        <div class="card-icon purple">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <h2 class="card-title">System Settings</h2>
+      </div>
+
+      <div class="two-col">
+        <div class="field-group">
+          <div class="field-label">Default Currency</div>
+          <div class="select-wrap">
+            <select class="field-select" id="currency" onchange="markUnsaved()">
+              <option value="USD" selected>USD — US Dollar ($)</option>
+              <option value="EUR">EUR — Euro (€)</option>
+              <option value="GBP">GBP — British Pound (£)</option>
+              <option value="NGN">NGN — Nigerian Naira (₦)</option>
+              <option value="CAD">CAD — Canadian Dollar (C$)</option>
+            </select>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="field-hint">Currency used across the platform</div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Commission Calculation Period</div>
+          <div class="select-wrap">
+            <select class="field-select" id="calcPeriod" onchange="markUnsaved()">
+              <option value="monthly" selected>Monthly</option>
+              <option value="weekly">Weekly</option>
+              <option value="quarterly">Quarterly</option>
+            </select>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="field-hint">How often commissions are calculated</div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Commission Payout Day</div>
+          <div class="input-wrap">
+            <input class="field-input" type="number" id="payoutDay" value="1" min="1" max="28" oninput="markUnsaved()"/>
+          </div>
+          <div class="field-hint">Day of the month commissions are paid (1–28)</div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Maximum Network Depth</div>
+          <div class="input-wrap">
+            <input class="field-input" type="number" id="networkDepth" value="5" min="1" max="20" oninput="markUnsaved()"/>
+          </div>
+          <div class="field-hint">Maximum levels in the downline network</div>
+        </div>
+      </div>
+
+      <hr class="field-divider"/>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">Auto-approve Commissions</div>
+          <div class="toggle-desc">Automatically approve commissions without manual review</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="autoApprove" onchange="markUnsaved()"/>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row" style="margin-top:20px;">
+        <div class="toggle-info">
+          <div class="toggle-label">Allow Distributor Self-Registration</div>
+          <div class="toggle-desc">Let distributors register without an admin invite</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="selfReg" checked onchange="markUnsaved()"/>
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+var hasUnsaved = false;
+
+function markUnsaved(){
+  if(!hasUnsaved){
+    hasUnsaved = true;
+    var btn = document.getElementById('saveBtn');
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>'
+      + 'Save Changes <span class="unsaved-dot"></span>';
+  }
+}
+
+function saveSettings(){
+  // Validate
+  var minP = parseFloat(document.getElementById('minPurchase').value);
+  var pct  = parseFloat(document.getElementById('commPct').value);
+  var day  = parseInt(document.getElementById('payoutDay').value);
+
+  if(isNaN(minP) || minP < 0){ showError('Minimum purchase must be a positive number.'); return; }
+  if(isNaN(pct) || pct < 0 || pct > 100){ showError('Commission percentage must be between 0 and 100.'); return; }
+  if(isNaN(day) || day < 1 || day > 28){ showError('Payout day must be between 1 and 28.'); return; }
+
+  hasUnsaved = false;
+  var btn = document.getElementById('saveBtn');
+  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>'
+    + 'Save Changes';
+
+  toast('Settings saved successfully.');
+}
+
+function showError(msg){
+  toast(msg, true);
+}
+
+function toast(msg, isError){
+  var wrap = document.getElementById('toastWrap');
+  var el = document.createElement('div');
+  el.className = 'toast';
+  var iconColor = isError ? '#f87171' : '#4ade80';
+  var iconPath  = isError
+    ? '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'
+    : '<polyline points="20 6 9 17 4 12"/>';
+  el.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="' + iconColor + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' + iconPath + '</svg>' + msg;
+  wrap.appendChild(el);
+  setTimeout(function(){ el.style.animation='slideOut .3s both'; setTimeout(function(){ el.remove(); },300); }, 3500);
+}
+
+function logout(){
+  // In a real app, clear session/token
+  window.location.href = '../index.html';
+}
+</script>
 </body>
 </html>
+
