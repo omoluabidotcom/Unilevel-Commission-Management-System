@@ -10,13 +10,21 @@ A Unilevel commission tracking web application.
 npm install
 ```
 
-2. Run in development mode:
+2. Create your environment file:
+
+```bash
+copy .env.example .env
+```
+
+3. (Optional) If you’re using MySQL, create a database and run the schema in `db/schema.sql`.
+
+4. Run in development mode:
 
 ```bash
 npm run dev
 ```
 
-3. Open http://localhost:3000 in your browser.
+5. Open http://localhost:3000 in your browser.
 
 ## Project structure
 
