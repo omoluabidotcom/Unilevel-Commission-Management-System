@@ -1,23 +1,336 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Downlines</title>
-  <link rel="stylesheet" href="../css/custom.css" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CommissionHub — My Downlines</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue:       #1a6ef5;
+    --blue-light: #e8f0fe;
+    --green:      #16a34a;
+    --orange:     #ea580c;
+    --text-primary:   #111827;
+    --text-secondary: #6b7280;
+    --text-muted:     #9ca3af;
+    --border:         #e5e7eb;
+    --bg:             #f9fafb;
+    --white:          #ffffff;
+    --sidebar-w:      240px;
+    --radius:         12px;
+    --shadow:         0 1px 4px rgba(0,0,0,.07), 0 0 1px rgba(0,0,0,.06);
+  }
+
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); display: flex; min-height: 100vh; font-size: 14px; }
+
+  /* ── SIDEBAR ── */
+  .sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100; padding: 22px 14px 30px; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; margin-bottom: 28px; }
+  .brand-icon { width: 36px; height: 36px; background: var(--blue); border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
+  .brand-name { font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
+  .nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; color: var(--text-secondary); font-weight: 500; font-size: 14px; transition: background .15s, color .15s; text-decoration: none; user-select: none; }
+  .nav-item:hover { background: var(--bg); color: var(--text-primary); }
+  .nav-item.active { background: var(--blue); color: #fff; }
+  .nav-divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  .nav-item.logout { color: var(--red); }
+  .nav-item.logout:hover { background: #fee2e2; color: var(--red); }
+
+  /* ── MAIN ── */
+  .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+
+  /* ── TOPBAR ── */
+  .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+  .breadcrumb { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+  .breadcrumb a { color: var(--text-muted); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--blue); }
+  .breadcrumb .sep { color: var(--border); }
+  .topbar-left h1 { font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .notif-btn { position: relative; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--white); display: grid; place-items: center; cursor: pointer; transition: border-color .15s; }
+  .notif-btn:hover { border-color: var(--blue); }
+  .notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid #fff; }
+  .avatar { width: 36px; height: 36px; background: var(--blue); border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; }
+  .user-pill { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+  .user-info .name { font-weight: 600; font-size: 13px; line-height: 1.2; }
+  .user-info .role { font-size: 11px; color: var(--text-muted); }
+
+  /* ── CONTENT ── */
+  .content { padding: 22px 28px; display: flex; flex-direction: column; gap: 20px; }
+  .page-subtitle { font-size: 13.5px; color: var(--text-secondary); animation: fadeUp .3s both; }
+
+  /* ── STAT GRID ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; animation: fadeUp .3s .04s both; }
+  .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s; }
+  .stat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.09); transform: translateY(-1px); }
+  .stat-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 10px; }
+  .stat-value { font-size: 30px; font-weight: 700; letter-spacing: -.7px; line-height: 1; }
+
+  /* ── FILTER PANEL ── */
+  .filter-panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); animation: fadeUp .3s .08s both; }
+  .search-wrap { position: relative; max-width: 420px; }
+  .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+  .search-input { width: 100%; padding: 11px 16px 11px 42px; border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 13.5px; color: var(--text-primary); background: var(--white); outline: none; transition: border-color .15s, box-shadow .15s; }
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-light); }
+
+  /* ── TABLE ── */
+  .table-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; animation: fadeUp .3s .12s both; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #f8fafc; border-bottom: 1px solid var(--border); }
+  thead th { text-align: left; padding: 11px 20px; font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: .6px; text-transform: uppercase; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { color: var(--text-primary); }
+  thead th .si { margin-left: 4px; opacity: .35; display: inline-block; transition: opacity .15s; }
+  thead th.sort-asc .si, thead th.sort-desc .si { opacity: 1; color: var(--blue); }
+  thead th.sort-desc .si { transform: rotate(180deg); }
+
+  tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .12s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f8fafc; }
+  tbody td { padding: 16px 20px; font-size: 14px; vertical-align: middle; }
+
+  /* NAME CELL */
+  .name-cell { display: flex; align-items: center; gap: 11px; }
+  .name-avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+  /* BADGE */
+  .badge { display: inline-flex; align-items: center; padding: 4px 14px; border-radius: 99px; font-size: 12.5px; font-weight: 500; }
+  .badge.active   { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  .badge.inactive { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+  .badge.pending  { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+
+  /* commission amount */
+  .comm-amount { font-weight: 600; color: var(--green); }
+
+  /* NO RESULTS */
+  .no-results { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .no-results svg { display: block; margin: 0 auto 12px; opacity: .3; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+  tbody tr { animation: fadeUp .2s both; }
+  tbody tr:nth-child(1){ animation-delay:.04s; }
+  tbody tr:nth-child(2){ animation-delay:.08s; }
+  tbody tr:nth-child(3){ animation-delay:.12s; }
+</style>
 </head>
 <body>
-  <header class="page-header">
-    <a href="../dashboard.html" class="back">← Dashboard</a>
-    <h1>My Downlines</h1>
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </div>
+    <span class="brand-name">CommissionHub</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item" href="dashboard.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item active" href="#">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      My Downlines
+    </a>
+    <a class="nav-item" href="my-commissions.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Commission History
+    </a>
+    <a class="nav-item" href="notifications.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Notifications
+    </a>
+    <a class="nav-item" href="profile.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </a>
+    <hr class="nav-divider"/>
+    <a class="nav-item logout" href="#" onclick="confirmLogout(event)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/><path d="M9 5v14"/></svg>
+      Logout
+    </a>
+  </nav>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">
+        <a href="distributor-dashboard.html">Dashboard</a>
+        <span class="sep">›</span>
+        <span>My Downlines</span>
+      </div>
+      <h1>My Downlines</h1>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn">
+        <div class="notif-dot"></div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <div class="user-pill">
+        <div class="avatar">JD</div>
+        <div class="user-info">
+          <div class="name">John Doe</div>
+          <div class="role">Distributor</div>
+        </div>
+      </div>
+    </div>
   </header>
 
-  <main class="container">
-    <p>Your downline tree will be displayed here.</p>
-    <div id="treeRoot" class="tree"></div>
-  </main>
+  <main class="content">
 
-  <script src="../js/tree.js"></script>
-  <script src="../js/utils.js"></script>
+    <p class="page-subtitle">View and manage your direct downline distributors</p>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Downlines</div>
+        <div class="stat-value" id="statTotal">3</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Monthly Purchases</div>
+        <div class="stat-value" id="statPurchases">$360</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Commission (This Month)</div>
+        <div class="stat-value" id="statCommission">$54.00</div>
+      </div>
+    </div>
+
+    <!-- FILTER -->
+    <div class="filter-panel">
+      <div class="search-wrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="searchInput" type="text" placeholder="Search by name, email or phone..."/>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th data-col="name">Name <span class="si">↑</span></th>
+            <th data-col="email">Email <span class="si">↑</span></th>
+            <th data-col="phone">Phone <span class="si">↑</span></th>
+            <th data-col="joinDate">Join Date <span class="si">↑</span></th>
+            <th data-col="purchase">Monthly Purchase <span class="si">↑</span></th>
+            <th data-col="status">Status <span class="si">↑</span></th>
+            <th data-col="commission">My Commission <span class="si">↑</span></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script>
+var COMM_RATE = 0.15; // 15%
+
+var downlines = [
+  { id:1, name:'Alice Cooper',  email:'alice@example.com',   phone:'+1 234 567 8904', joinDate:'2025-02-10', purchase:120, status:'active'   },
+  { id:2, name:'Bob Martin',    email:'bob@example.com',     phone:'+1 234 567 8905', joinDate:'2025-02-15', purchase:160, status:'active'   },
+  { id:3, name:'Charlie Davis', email:'charlie@example.com', phone:'+1 234 567 8906', joinDate:'2025-03-01', purchase:80,  status:'active'   },
+];
+
+var filtered = [];
+
+// avatar colors per person
+var avatarColors = ['#2563eb','#7c3aed','#16a34a','#ea580c','#0891b2','#dc2626'];
+function avatarColor(idx){ return avatarColors[idx % avatarColors.length]; }
+function initials(name){ return name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase(); }
+function fmt(n){ return '$' + parseFloat(n).toFixed(2); }
+function cap(s){ return s ? s[0].toUpperCase()+s.slice(1) : ''; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function updateStats(){
+  var total      = downlines.length;
+  var purchases  = downlines.reduce(function(a,d){ return a+d.purchase; }, 0);
+  var commission = purchases * COMM_RATE;
+  document.getElementById('statTotal').textContent      = total;
+  document.getElementById('statPurchases').textContent  = '$' + purchases.toLocaleString();
+  document.getElementById('statCommission').textContent = fmt(commission);
+}
+
+function applyFilters(){
+  var q = document.getElementById('searchInput').value.toLowerCase().trim();
+  filtered = downlines.filter(function(d){
+    return !q || d.name.toLowerCase().includes(q) || d.email.toLowerCase().includes(q) || d.phone.includes(q);
+  });
+  render();
+}
+
+function render(){
+  var tbody = document.getElementById('tableBody');
+  if(!filtered.length){
+    tbody.innerHTML = '<tr><td colspan="7"><div class="no-results">'
+      + '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+      + 'No downlines match your search.</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(function(d, i){
+    var comm = d.purchase * COMM_RATE;
+    var idx  = downlines.indexOf(d);
+    return '<tr style="animation-delay:'+(i*30)+'ms">'
+      + '<td><div class="name-cell">'
+        + '<div class="name-avatar" style="background:'+avatarColor(idx)+'">'+initials(d.name)+'</div>'
+        + '<span>'+esc(d.name)+'</span>'
+      + '</div></td>'
+      + '<td>'+esc(d.email)+'</td>'
+      + '<td>'+esc(d.phone)+'</td>'
+      + '<td>'+esc(d.joinDate)+'</td>'
+      + '<td>'+fmt(d.purchase)+'</td>'
+      + '<td><span class="badge '+d.status+'">'+cap(d.status)+'</span></td>'
+      + '<td><span class="comm-amount">'+fmt(comm)+'</span></td>'
+      + '</tr>';
+  }).join('');
+}
+
+// column sort
+var sortState = { col: null, dir: 'asc' };
+document.querySelectorAll('thead th[data-col]').forEach(function(th){
+  th.addEventListener('click', function(){
+    var col = th.dataset.col;
+    var dir = (sortState.col===col && sortState.dir==='asc') ? 'desc' : 'asc';
+    sortState = { col: col, dir: dir };
+    document.querySelectorAll('thead th').forEach(function(t){ t.classList.remove('sort-asc','sort-desc'); });
+    th.classList.add(dir==='asc'?'sort-asc':'sort-desc');
+
+    filtered.sort(function(a, b){
+      var va, vb;
+      if(col==='name')       { va=a.name.toLowerCase();  vb=b.name.toLowerCase(); }
+      else if(col==='email')  { va=a.email;               vb=b.email; }
+      else if(col==='phone')  { va=a.phone;               vb=b.phone; }
+      else if(col==='joinDate'){ va=a.joinDate;           vb=b.joinDate; }
+      else if(col==='purchase'){ va=a.purchase;           vb=b.purchase; }
+      else if(col==='status') { va=a.status;              vb=b.status; }
+      else if(col==='commission'){ va=a.purchase*COMM_RATE; vb=b.purchase*COMM_RATE; }
+      if(va<vb) return dir==='asc'?-1:1;
+      if(va>vb) return dir==='asc'?1:-1;
+      return 0;
+    });
+    render();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+
+updateStats();
+applyFilters();
+
+function confirmLogout(e){
+  e.preventDefault();
+  window.location.href = '../index.html';
+}
+</script>
 </body>
 </html>
