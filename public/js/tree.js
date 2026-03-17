@@ -27,23 +27,31 @@ function renderTree(rootId, data) {
   root.appendChild(buildNode(data));
 }
 
-// Demo tree data
-const demoTree = {
-  name: 'Root Distributor',
-  email: 'root@example.com',
-  children: [
-    {
-      name: 'Affiliate A',
-      email: 'a@example.com',
-      children: [
-        { name: 'Affiliate A1', email: 'a1@example.com' },
-        { name: 'Affiliate A2', email: 'a2@example.com' },
-      ],
-    },
-    { name: 'Affiliate B', email: 'b@example.com' },
-  ],
-};
+function buildTreeFromFlat(list) {
+  const byId = new Map();
+  list.forEach((u) => {
+    byId.set(String(u.id), { id: String(u.id), name: u.full_name || u.username || u.email, email: u.email, sponsor_id: u.sponsor_id ? String(u.sponsor_id) : null, children: [] });
+  });
+  let root = null;
+  byId.forEach((node) => {
+    if (node.sponsor_id && byId.has(node.sponsor_id)) {
+      byId.get(node.sponsor_id).children.push(node);
+    } else {
+      root = node;
+    }
+  });
+  return root;
+}
 
-window.addEventListener('DOMContentLoaded', () => {
-  renderTree('treeRoot', demoTree);
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const currentUser = window.AppUtils.getLocalUser();
+    const userId = currentUser ? currentUser.id : null;
+    const res = await window.AppUtils.safeFetch(userId ? `/api/users/${userId}/downline` : '/api/users');
+    const list = res.downline || res.users || [];
+    const tree = buildTreeFromFlat(list);
+    if (tree) renderTree('treeRoot', tree);
+  } catch {
+    // ignore errors for now
+  }
 });

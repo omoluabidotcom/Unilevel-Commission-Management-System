@@ -108,6 +108,127 @@ async function listPurchases({ period } = {}) {
 }
 
 // Returns all active distributor users for the Add Purchase dropdown
+async function listPurchasesForUser(userId, { period } = {}) {
+  const pool = await getPool();
+  const params = [userId];
+  let sql =
+    'SELECT p.id, p.user_id, p.period, p.amount, p.product_details, p.status, p.created_at, u.email, u.full_name ' +
+    'FROM purchases p JOIN users u ON u.id = p.user_id WHERE p.user_id = ?';
+  if (period) { sql += ' AND p.period = ?'; params.push(period); }
+  sql += ' ORDER BY p.created_at DESC, p.id DESC';
+  const [rows] = await pool.execute(sql, params);
+  return rows.map((r) => ({
+    id: String(r.id),
+    userId: String(r.user_id),
+    period: r.period,
+    amount: Number(r.amount),
+    productDetails: r.product_details == null ? null
+      : typeof r.product_details === 'string' ? JSON.parse(r.product_details) : r.product_details,
+    status: r.status || 'paid',
+    createdAt: r.created_at,
+    distributorEmail: r.email,
+    distributorName: r.full_name,
+  }));
+}
+
+async function listPurchasesForUsers(userIds, { period } = {}) {
+  if (!userIds || !userIds.length) return [];
+  const pool = await getPool();
+  const placeholders = userIds.map(() => '?').join(',');
+  const params = [...userIds];
+  let sql = 'SELECT p.id, p.user_id, p.period, p.amount, p.product_details, p.status, p.created_at '
+    + 'FROM purchases p WHERE p.user_id IN (' + placeholders + ')';
+  if (period) { sql += ' AND p.period = ?'; params.push(period); }
+  sql += ' ORDER BY p.created_at DESC';
+  const [rows] = await pool.execute(sql, params);
+  return rows.map((r) => ({
+    id: String(r.id),
+    userId: String(r.user_id),
+    period: r.period,
+    amount: Number(r.amount),
+    status: r.status || 'paid',
+    createdAt: r.created_at,
+  }));
+}
+
+async function listPurchasesForUsers(userIds, { period } = {}) {
+  if (!userIds || !userIds.length) return [];
+  const pool = await getPool();
+  const placeholders = userIds.map(() => '?').join(',');
+  const params = [...userIds];
+  let sql = `SELECT p.id, p.user_id, p.period, p.amount, p.product_details, p.status, p.created_at
+             FROM purchases p WHERE p.user_id IN (${placeholders})`;
+  if (period) { sql += ' AND p.period = ?'; params.push(period); }
+  sql += ' ORDER BY p.created_at DESC';
+  const [rows] = await pool.execute(sql, params);
+  return rows.map((r) => ({
+    id: String(r.id),
+    userId: String(r.user_id),
+    period: r.period,
+    amount: Number(r.amount),
+    status: r.status || 'paid',
+    createdAt: r.created_at,
+  }));
+}
+
+async function listPurchasesForDownlines(sponsorId) {
+  const pool = await getPool();
+  // Get all purchases for users whose sponsor_id = sponsorId
+  const [rows] = await pool.execute(
+    `SELECT p.id, p.user_id, p.period, p.amount, p.product_details, p.status, p.created_at
+     FROM purchases p
+     JOIN users u ON u.id = p.user_id
+     WHERE u.sponsor_id = ?
+     ORDER BY p.created_at DESC`,
+    [sponsorId]
+  );
+  return rows.map((r) => ({
+    id: String(r.id),
+    userId: String(r.user_id),
+    period: r.period,
+    amount: Number(r.amount),
+    productDetails: r.product_details == null ? null
+      : typeof r.product_details === 'string' ? JSON.parse(r.product_details) : r.product_details,
+    status: r.status || 'paid',
+    createdAt: r.created_at,
+  }));
+}
+
+async function listDownlinesForUser(userId) {
+  const pool = await getPool();
+  const [rows] = await pool.execute(
+    'SELECT id, full_name, username, email, phone, is_active, created_at FROM users WHERE sponsor_id = ? ORDER BY created_at DESC',
+    [userId]
+  );
+  return rows.map((r) => ({
+    id: String(r.id),
+    fullName: r.full_name || r.username || r.email,
+    email: r.email,
+    phone: r.phone,
+    isActive: Boolean(r.is_active),
+    createdAt: r.created_at,
+  }));
+}
+
+async function listPurchasesForDownlines(sponsorId, { period } = {}) {
+  const pool = await getPool();
+  const params = [sponsorId];
+  let sql =
+    'SELECT p.id, p.user_id, p.period, p.amount, p.product_details, p.status, p.created_at ' +
+    'FROM purchases p JOIN users u ON u.id = p.user_id WHERE u.sponsor_id = ?';
+  if (period) { sql += ' AND p.period = ?'; params.push(period); }
+  sql += ' ORDER BY p.created_at DESC';
+  const [rows] = await pool.execute(sql, params);
+  return rows.map((r) => ({
+    id: String(r.id),
+    userId: String(r.user_id),
+    period: r.period,
+    amount: Number(r.amount),
+    status: r.status || 'paid',
+    createdAt: r.created_at,
+  }));
+}
+
 async function listDistributors() {
   const pool = await getPool();
   const [rows] = await pool.execute(
@@ -122,6 +243,65 @@ async function listDistributors() {
 }
 
 // Inserts a new purchase row and returns it with its generated id
+async function upsertCommission(userId, period, purchaseAmount) {
+  const pool = await getPool();
+
+  // Get commission % from settings
+  const settings = await getSettings();
+  const rawPct = settings ? settings.commissionPercentage : 0;
+  const pct = typeof rawPct === 'object' ? (rawPct.level1 || 0) : Number(rawPct || 0);
+
+  // 1. Sum this distributor's OWN purchases this period
+  const [purRows] = await pool.execute(
+    'SELECT COALESCE(SUM(amount), 0) as total FROM purchases WHERE user_id = ? AND period = ?',
+    [userId, period]
+  );
+  const personalAmount = Number(purRows[0].total || 0);
+  const personalCommission = personalAmount * (pct / 100);
+
+  // 2. Sum DIRECT DOWNLINES purchases this period
+  const [dlRows] = await pool.execute(
+    'SELECT COALESCE(SUM(p.amount), 0) as total FROM purchases p JOIN users u ON u.id = p.user_id WHERE u.sponsor_id = ? AND p.period = ?',
+    [userId, period]
+  );
+  const downlineAmount = Number(dlRows[0].total || 0);
+  const downlineCommission = downlineAmount * (pct / 100);
+
+  const totalCommission = personalCommission + downlineCommission;
+  const breakdown = JSON.stringify({
+    personal: personalCommission,
+    downline: downlineCommission,
+    pct: pct,
+  });
+
+  // Upsert commission record for this distributor
+  const [existing] = await pool.execute(
+    'SELECT id FROM commissions WHERE user_id = ? AND period = ? LIMIT 1',
+    [userId, period]
+  );
+  if (existing.length) {
+    await pool.execute(
+      `UPDATE commissions SET personal_amount = ?, downline_amount = ?, total_commission = ?, breakdown = ? WHERE user_id = ? AND period = ?`,
+      [personalAmount, downlineAmount, totalCommission, breakdown, userId, period]
+    );
+  } else {
+    await pool.execute(
+      `INSERT INTO commissions (user_id, period, personal_amount, downline_amount, total_commission, status, breakdown) VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
+      [userId, period, personalAmount, downlineAmount, totalCommission, breakdown]
+    );
+  }
+
+  // 3. Also update the UPLINE (sponsor) commission — they earn from this distributor's purchases
+  const [sponsorRows] = await pool.execute(
+    'SELECT sponsor_id FROM users WHERE id = ? LIMIT 1',
+    [userId]
+  );
+  if (sponsorRows.length && sponsorRows[0].sponsor_id) {
+    const sponsorId = sponsorRows[0].sponsor_id;
+    await upsertCommission(sponsorId, period, 0); // recursively update sponsor
+  }
+}
+
 async function createPurchase({ distributorName, distributorEmail, period, createdAt, amount, products, status }) {
   const pool = await getPool();
 
@@ -143,6 +323,13 @@ async function createPurchase({ distributorName, distributorEmail, period, creat
     'INSERT INTO purchases (user_id, period, amount, product_details, status, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     [userId, period, amount, productDetails, status, createdAt]
   );
+
+  // Auto-calculate and upsert commission for this distributor+period
+  try {
+    await upsertCommission(userId, period, amount);
+  } catch(err) {
+    console.error('upsertCommission error:', err);
+  }
 
   return {
     id: String(result.insertId),
@@ -358,8 +545,14 @@ async function findUserByEmail(email) {
 
 async function findUserById(id) {
   const pool = await getPool();
+
+  // Ensure bank_details column exists
+  try {
+    await pool.execute('ALTER TABLE users ADD COLUMN bank_details JSON');
+  } catch(e) { /* already exists */ }
+
   const [rows] = await pool.execute(
-    'SELECT id, email, full_name, phone, profile_picture, role, is_active, created_at, last_login FROM users WHERE id = ? LIMIT 1', [id]
+    'SELECT u.id, u.email, u.full_name, u.phone, u.profile_picture, u.role, u.is_active, u.created_at, u.last_login, u.sponsor_id, COALESCE(u.bank_details, NULL) AS bank_details, s.full_name AS sponsor_name FROM users u LEFT JOIN users s ON s.id = u.sponsor_id WHERE u.id = ? LIMIT 1', [id]
   );
   const row = rows?.[0];
   if (!row) return undefined;
@@ -373,6 +566,11 @@ async function findUserById(id) {
     isActive: Boolean(row.is_active),
     createdAt: row.created_at,
     lastLogin: row.last_login,
+    sponsorId: row.sponsor_id ? String(row.sponsor_id) : null,
+    sponsorName: row.sponsor_name || null,
+    bankDetails: row.bank_details
+      ? (typeof row.bank_details === 'string' ? JSON.parse(row.bank_details) : row.bank_details)
+      : null,
   };
 }
 
@@ -546,7 +744,11 @@ module.exports = {
   updateUser,
   deleteUser,
   listPurchases,
+  listPurchasesForUser,
+  listPurchasesForDownlines,
+  listDownlinesForUser,
   listDistributors,
+  upsertCommission,
   createPurchase,
   listNotifications,
   markNotificationRead,
