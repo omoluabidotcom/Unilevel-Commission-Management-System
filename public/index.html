@@ -22,7 +22,15 @@
         <input id="email" name="email" type="email" autocomplete="email" required placeholder="admin@example.com" />
 
         <label for="password">Password</label>
-        <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
+        <div class="password-field">
+          <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
+          <button type="button" class="pass-eye" id="togglePassword" aria-label="Toggle password visibility">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+          </button>
+        </div>
 
         <button type="submit" class="primary">Sign in</button>
 
@@ -35,5 +43,22 @@
 
   <script src="js/utils.js"></script>
   <script src="js/auth.js"></script>
+  <script>
+    (function(){
+      var field = document.getElementById('password');
+      var toggle = document.getElementById('togglePassword');
+      var openIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+      var closedIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+      toggle.addEventListener('click', function(){
+        if(field.type === 'text'){
+          field.type = 'password';
+          toggle.innerHTML = closedIcon;
+          return;
+        }
+        field.type = 'text';
+        toggle.innerHTML = openIcon;
+      });
+    })();
+  </script>
 </body>
 </html>

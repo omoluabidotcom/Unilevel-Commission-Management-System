@@ -103,6 +103,37 @@ body {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
+.password-field {
+  position: relative;
+}
+.password-field input {
+  padding-right: 3rem;
+}
+.pass-eye {
+  position: absolute;
+  right: 10px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background .15s;
+  padding: 0;
+  line-height: 0;
+}
+.pass-eye svg {
+  stroke: rgba(55, 65, 81, 0.75);
+}
+.pass-eye:hover {
+  background: rgba(15, 23, 42, 0.06);
+}
+
 .login-form button.primary {
   width: 100%;
   margin-top: 1.5rem;
