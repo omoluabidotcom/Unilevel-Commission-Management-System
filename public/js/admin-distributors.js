@@ -1,20 +1,5 @@
-// ── DATA ──
-let distributors = [
-  { id:1,  name:"John Doe",        email:"john@example.com",     phone:"+1 234 567 8901", sponsor:"Jane Smith",   status:"active",   date:"2026-03-02" },
-  { id:2,  name:"Sarah Wilson",    email:"sarah@example.com",    phone:"+1 234 567 8902", sponsor:"Mike Johnson", status:"active",   date:"2026-03-01" },
-  { id:3,  name:"David Brown",     email:"david@example.com",    phone:"+1 234 567 8903", sponsor:"Jane Smith",   status:"active",   date:"2026-02-28" },
-  { id:4,  name:"Alice Cooper",    email:"alice@example.com",    phone:"+1 234 567 8904", sponsor:"John Doe",     status:"disabled", date:"2026-02-27" },
-  { id:5,  name:"Bob Martin",      email:"bob@example.com",      phone:"+1 234 567 8905", sponsor:"Sarah Wilson", status:"active",   date:"2026-02-26" },
-  { id:6,  name:"Grace Miller",    email:"grace@example.com",    phone:"+1 234 567 8906", sponsor:"David Brown",  status:"disabled", date:"2026-02-25" },
-  { id:7,  name:"Henry Clark",     email:"henry@example.com",    phone:"+1 234 567 8907", sponsor:"Jane Smith",   status:"active",   date:"2026-02-24" },
-  { id:8,  name:"Emma Garcia",     email:"emma@example.com",     phone:"+1 234 567 8908", sponsor:"Mike Johnson", status:"pending",  date:"2026-02-23" },
-  { id:9,  name:"Olivia Martinez", email:"olivia@example.com",   phone:"+1 234 567 8909", sponsor:"John Doe",     status:"active",   date:"2026-02-22" },
-  { id:10, name:"James Anderson",  email:"james@example.com",    phone:"+1 234 567 8910", sponsor:"Sarah Wilson", status:"inactive", date:"2026-02-21" },
-  { id:11, name:"Sophia Lee",      email:"sophia@example.com",   phone:"+1 234 567 8911", sponsor:"David Brown",  status:"active",   date:"2026-02-20" },
-  { id:12, name:"William Taylor",  email:"william@example.com",  phone:"+1 234 567 8912", sponsor:"Jane Smith",   status:"active",   date:"2026-02-19" },
-];
-
-let nextId = 13;
+// ── DATA (loaded from DB) ──
+let distributors = [];
 const PER_PAGE = 10;
 let currentPage = 1;
 let editingId = null;
@@ -91,7 +76,8 @@ function openEditModal(id){
   openModal('formModal');
 }
 
-function saveDistributor(){
+// ── SAVE (ADD or EDIT) — wired to API ──
+async function saveDistributor(){
   const fn = document.getElementById('f_firstName').value.trim();
   const ln = document.getElementById('f_lastName').value.trim();
   const em = document.getElementById('f_email').value.trim();
@@ -108,24 +94,59 @@ function saveDistributor(){
   });
   if(!valid) return;
 
-  const rec = {
-    name: fn + ' ' + ln,
-    email: em, phone: ph,
+  const saveBtn = document.getElementById('formSaveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+
+  const payload = {
+    fullName: fn + ' ' + ln,
+    email: em,
+    phone: ph,
     sponsor: document.getElementById('f_sponsor').value,
     status: document.getElementById('f_status').value,
   };
 
-  if(editingId){
-    const idx = distributors.findIndex(x => x.id === editingId);
-    distributors[idx] = { ...distributors[idx], ...rec };
-    toast('Distributor updated successfully.');
-  } else {
-    distributors.unshift({ id: nextId++, date: new Date().toISOString().split('T')[0], ...rec });
-    toast('Distributor added successfully.');
+  try {
+    if(editingId){
+      await window.AppUtils.safeFetch('/api/users/' + editingId, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+      const idx = distributors.findIndex(x => x.id === editingId);
+      distributors[idx] = {
+        ...distributors[idx],
+        name: payload.fullName,
+        email: payload.email,
+        phone: payload.phone,
+        sponsor: payload.sponsor,
+        status: payload.status,
+      };
+      toast('Distributor updated successfully.');
+    } else {
+      const result = await window.AppUtils.safeFetch('/api/users', {
+        method: 'POST',
+        body: JSON.stringify({ ...payload, role: 'distributor' }),
+      });
+      const u = result.user;
+      distributors.unshift({
+        id: Number(u.id),
+        name: u.fullName || payload.fullName,
+        email: u.email,
+        phone: u.phone || payload.phone,
+        sponsor: payload.sponsor,
+        status: u.isActive ? 'active' : payload.status,
+        date: u.createdAt ? String(u.createdAt).slice(0,10) : new Date().toISOString().slice(0,10),
+      });
+      showCredsModal(u.username, u.plainPassword);
+    }
+    closeModal('formModal');
+    applyFilters();
+  } catch(e) {
+    toast(e.message || 'Failed to save distributor', 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = editingId ? 'Save Changes' : 'Add Distributor';
   }
-
-  closeModal('formModal');
-  applyFilters();
 }
 
 function openViewModal(id){
@@ -157,12 +178,27 @@ function confirmToggle(id){
   openModal('confirmModal');
 }
 
-function toggleStatus(id, disabling){
-  const idx = distributors.findIndex(x => x.id === id);
-  distributors[idx].status = disabling ? 'disabled' : 'active';
-  closeModal('confirmModal');
-  toast(disabling ? 'Distributor disabled.' : 'Distributor enabled.');
-  applyFilters();
+// ── TOGGLE STATUS — wired to API ──
+async function toggleStatus(id, disabling){
+  const confirmBtn = document.getElementById('confirmBtn');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Saving…';
+
+  try {
+    await window.AppUtils.safeFetch('/api/users/' + id, {
+      method: 'PUT',
+      body: JSON.stringify({ isActive: !disabling }),
+    });
+    const idx = distributors.findIndex(x => x.id === id);
+    distributors[idx].status = disabling ? 'disabled' : 'active';
+    closeModal('confirmModal');
+    toast(disabling ? 'Distributor disabled.' : 'Distributor enabled.');
+    applyFilters();
+  } catch(e) {
+    toast(e.message || 'Failed to update status', 'error');
+  } finally {
+    confirmBtn.disabled = false;
+  }
 }
 
 function cap(s){ return s ? s[0].toUpperCase()+s.slice(1) : ''; }
@@ -279,8 +315,31 @@ document.querySelectorAll('thead th[data-col]').forEach(th => {
   });
 });
 
+async function loadDistributors(){
+  try {
+    const res = await window.AppUtils.safeFetch('/api/users');
+    const sponsorMap = new Map(res.users.map((u) => [u.id, u.fullName || u.username || u.email]));
+    distributors = res.users
+      .filter((u) => u.role === 'distributor')
+      .map((u) => ({
+        id: Number(u.id),
+        name: u.fullName || u.username || u.email,
+        email: u.email,
+        phone: u.phone || '—',
+        sponsor: u.sponsorId ? sponsorMap.get(String(u.sponsorId)) || '—' : '—',
+        status: u.isActive ? 'active' : 'disabled',
+        date: u.createdAt ? String(u.createdAt).slice(0, 10) : '',
+      }));
+    applyFilters();
+  } catch (e) {
+    toast(e.message || 'Failed to load distributors', 'error');
+  }
+}
+
 document.getElementById('searchInput').addEventListener('input', applyFilters);
 document.getElementById('statusFilter').addEventListener('change', applyFilters);
 document.getElementById('sortSelect').addEventListener('change', applyFilters);
 
-applyFilters();
+window.addEventListener('DOMContentLoaded', () => {
+  loadDistributors();
+});

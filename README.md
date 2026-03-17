@@ -13,15 +13,23 @@ This repo holds a lightweight Unilevel commission tracker built with vanilla Nod
 
 1. Install dependencies:
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-2. Start the dev server (watch reloading is not configured yet):
+2. Create your environment file:
 
-   ```bash
-   npm run dev
-   ```
+```bash
+copy .env.example .env
+```
+
+3. (Optional) If you’re using MySQL, create a database and run the schema in `db/schema.sql`.
+
+4. Run in development mode:
+
+```bash
+npm run dev
+```
 
 3. Open http://localhost:3000 in a browser. Use the seeded credentials from `db/schema.sql`/`src/db/connection.js`, e.g. `distributor@example.com` / `password`.
 
@@ -37,7 +45,7 @@ Environment variables (dotenv already loaded in `server.js`):
 
 Create a `.env` (or use `.env.example`) as needed to override these.
 
-## Project layout
+## Project structure
 
 - `server.js`: Express entry point, static asset hosting, and route mounting.
 - `src/routes/`: API endpoints under `/api`.  

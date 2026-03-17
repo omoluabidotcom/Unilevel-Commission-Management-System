@@ -8,9 +8,11 @@
 window.AppUtils = window.AppUtils || {};
 
 window.AppUtils.safeFetch = function (url, options = {}) {
+  const token = window.localStorage.getItem('token');
   return fetch(url, {
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
     ...options,
