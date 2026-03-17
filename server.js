@@ -2,8 +2,12 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const fs = require('fs');
 
 dotenv.config({ override: true });
+if (!process.env.DB_HOST && fs.existsSync(path.join(__dirname, '.env.example'))) {
+  dotenv.config({ path: path.join(__dirname, '.env.example'), override: true });
+}
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,15 +20,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API routes
-const authRouter = require('./src/routes/auth');
-const usersRouter = require('./src/routes/users');
-const commissionsRouter = require('./src/routes/commissions');
-const settingsRouter = require('./src/routes/settings');
+const authRouter          = require('./src/routes/auth');
+const usersRouter         = require('./src/routes/users');
+const commissionsRouter   = require('./src/routes/commissions');
+const settingsRouter      = require('./src/routes/settings');
+const purchasesRouter     = require('./src/routes/purchases');
+const notificationsRouter = require('./src/routes/notifications');
+const profileRouter       = require('./src/routes/profile');
+const { ensureProfilePictureColumn } = require('./src/db/connection');
 
-app.use('/api/auth', authRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/commissions', commissionsRouter);
-app.use('/api/settings', settingsRouter);
+app.use('/api/auth',          authRouter);
+app.use('/api/users',         usersRouter);
+app.use('/api/commissions',   commissionsRouter);
+app.use('/api/settings',      settingsRouter);
+app.use('/api/purchases',     purchasesRouter);
+app.use('/api/notifications', notificationsRouter);
+app.use('/api/profile',       profileRouter);
+app.use('/api/tree/users',    usersRouter);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
@@ -45,10 +57,10 @@ function startServer(bindPort) {
       startServer(bindPort + 1);
       return;
     }
-
     console.error('Server error:', err);
     process.exit(1);
   });
 }
 
-startServer(port);
+// Migrate profile_picture column to MEDIUMTEXT on startup
+ensureProfilePictureColumn().then(() => startServer(port));

@@ -115,12 +115,17 @@
 
   function getCurrentPage() {
     const parts = window.location.pathname.split('/').filter(Boolean);
-    return parts.length ? parts[parts.length - 1].toLowerCase() : 'dashboard.html';
+    const page = parts.length ? parts[parts.length - 1].toLowerCase() : 'dashboard.html';
+    return page.split('?')[0]; // strip query strings
   }
 
   function renderSidebar() {
     const sidebar = document.getElementById('adminSidebar');
     if (!sidebar) return;
+
+    // Guard: never render twice — prevents notification pages re-running this
+    if (sidebar.dataset.rendered === '1') return;
+    sidebar.dataset.rendered = '1';
 
     const currentPage = getCurrentPage();
 
@@ -146,7 +151,9 @@
       a.className = 'nav-item';
       a.href = item.href;
 
-      const badgeHtml = item.badgeId ? `<span id="${item.badgeId}" class="nav-badge"></span>` : '';
+      const badgeHtml = item.badgeId
+        ? `<span id="${item.badgeId}" class="nav-badge" style="margin-left:auto;"></span>`
+        : '';
       a.innerHTML = `${item.icon}<span>${item.label}</span>${badgeHtml}`;
 
       if (item.key === 'logout') {
@@ -156,7 +163,10 @@
         });
       }
 
-      const isActive = item.href && item.href.toLowerCase() === currentPage;
+      // Match exact page, or distributor-profile belongs to distributors
+      const normHref = item.href ? item.href.toLowerCase().split('?')[0] : '';
+      const isActive = normHref === currentPage
+        || (item.key === 'distributors' && currentPage === 'distributor-profile.html');
       if (isActive) {
         a.classList.add('active');
       }

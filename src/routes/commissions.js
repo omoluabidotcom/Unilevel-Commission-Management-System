@@ -1,16 +1,21 @@
 const express = require('express');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
+const { listCommissionsForUser, listAllCommissions } = require('../db/connection');
 
 const router = express.Router();
 
-// Placeholder /commissions endpoint
-router.get('/', requireAuth, (req, res) => {
-  res.json({
-    commissions: [
-      { id: 'c1', amount: 120.0, description: 'Monthly payout', date: '2026-03-01' },
-      { id: 'c2', amount: 80.5, description: 'Team bonus', date: '2026-02-25' },
-    ],
-  });
+// Distributor: own commissions
+router.get('/me', requireAuth, async (req, res) => {
+  const period = req.query.period ? String(req.query.period) : undefined; // 'YYYY-MM'
+  const commissions = await listCommissionsForUser(req.user.userId, period);
+  res.json({ commissions });
+});
+
+// Admin: all commissions
+router.get('/', requireAuth, requireRole('admin'), async (req, res) => {
+  const period = req.query.period ? String(req.query.period) : undefined; // 'YYYY-MM'
+  const commissions = await listAllCommissions({ period });
+  res.json({ commissions });
 });
 
 module.exports = router;
