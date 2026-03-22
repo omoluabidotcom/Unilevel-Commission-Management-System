@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
   full_name VARCHAR(100),
   phone VARCHAR(30),
   profile_picture VARCHAR(255) DEFAULT NULL,
+  next_of_kin JSON DEFAULT NULL,
   role ENUM('admin', 'distributor') NOT NULL DEFAULT 'distributor',
   sponsor_id BIGINT UNSIGNED DEFAULT NULL,
   is_active BOOLEAN DEFAULT TRUE,

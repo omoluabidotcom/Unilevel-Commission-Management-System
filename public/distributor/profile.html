@@ -65,6 +65,7 @@
     .profile-card:nth-child(2){ animation: fadeUp .3s .05s both; }
     .profile-card:nth-child(3){ animation: fadeUp .3s .10s both; }
     .profile-card:nth-child(4){ animation: fadeUp .3s .15s both; }
+    .profile-card:nth-child(5){ animation: fadeUp .3s .20s both; }
 
     .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; gap: 16px; }
     .card-title { font-size: 16px; font-weight: 700; letter-spacing: -.25px; }
@@ -135,15 +136,16 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Commission History
     </a>
+    <!--
     <a class="nav-item" href="notifications.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       Notifications
     </a>
+    -->
     <a class="nav-item active" href="#">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       Profile
     </a>
-    <hr class="nav-divider"/>
     <a class="nav-item logout" href="#" onclick="confirmLogout(event)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Logout
@@ -283,7 +285,62 @@
       </div>
     </div>
 
-    <!-- CARD 4: BANK DETAILS -->
+    <!-- CARD 4: NEXT OF KIN -->
+    <div class="profile-card">
+      <div class="card-header">
+        <h2 class="card-title">Next of Kin</h2>
+        <button class="btn-save" id="saveKinBtn" onclick="saveNextOfKin()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save Next of Kin
+        </button>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Full Name</div>
+        <div class="icon-input-wrap">
+          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input class="icon-input" type="text" id="f_kinName" placeholder="Jane Doe" oninput="markUnsaved('kin')"/>
+        </div>
+        <span class="field-error" id="e_kinName"></span>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Relationship</div>
+        <div class="icon-input-wrap">
+          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <input class="icon-input" type="text" id="f_kinRelationship" placeholder="Spouse" oninput="markUnsaved('kin')"/>
+        </div>
+        <span class="field-error" id="e_kinRelationship"></span>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Phone Number</div>
+        <div class="icon-input-wrap">
+          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.9a16 16 0 0 0 6.08 6.08l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <input class="icon-input" type="tel" id="f_kinPhone" placeholder="+1 555 000 0000" oninput="markUnsaved('kin')"/>
+        </div>
+        <span class="field-error" id="e_kinPhone"></span>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Email Address (Optional)</div>
+        <div class="icon-input-wrap">
+          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <input class="icon-input" type="email" id="f_kinEmail" placeholder="jane@example.com" oninput="markUnsaved('kin')"/>
+        </div>
+        <span class="field-error" id="e_kinEmail"></span>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Address (Optional)</div>
+        <div class="icon-input-wrap">
+          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <input class="icon-input" type="text" id="f_kinAddress" placeholder="123 Main St, City" oninput="markUnsaved('kin')"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 5: BANK DETAILS -->
     <div class="profile-card">
       <div class="card-header">
         <h2 class="card-title">Bank Details</h2>
@@ -330,10 +387,10 @@
 
 <script src="../js/utils.js"></script>
 <script>
-  var unsaved = { personal: false, pass: false, bank: false };
+  var unsaved = { personal: false, pass: false, kin: false, bank: false };
   var ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
-  var BTN_LABELS = { savePersonalBtn:'Save Changes', savePassBtn:'Update Password', saveBankBtn:'Save Bank Details' };
-  var SECTION_BTN = { personal:'savePersonalBtn', pass:'savePassBtn', bank:'saveBankBtn' };
+  var BTN_LABELS = { savePersonalBtn:'Save Changes', savePassBtn:'Update Password', saveKinBtn:'Save Next of Kin', saveBankBtn:'Save Bank Details' };
+  var SECTION_BTN = { personal:'savePersonalBtn', pass:'savePassBtn', kin:'saveKinBtn', bank:'saveBankBtn' };
 
   function markUnsaved(s){
     if(!unsaved[s]){
@@ -375,6 +432,16 @@
         document.getElementById('f_holderName').value = b.holderName || '';
         document.getElementById('f_bankName').value   = b.bankName   || '';
         document.getElementById('f_acctNum').value    = b.acctNum    || '';
+      }
+
+      // Next of kin
+      if(u.nextOfKin){
+        var k = typeof u.nextOfKin === 'string' ? JSON.parse(u.nextOfKin) : u.nextOfKin;
+        document.getElementById('f_kinName').value = k.fullName || '';
+        document.getElementById('f_kinRelationship').value = k.relationship || '';
+        document.getElementById('f_kinPhone').value = k.phone || '';
+        document.getElementById('f_kinEmail').value = k.email || '';
+        document.getElementById('f_kinAddress').value = k.address || '';
       }
     } catch(e){
       toast('Failed to load profile: ' + e.message, 'error');
@@ -460,6 +527,61 @@
     finally { btn.disabled = false; }
   }
 
+  // ── SAVE NEXT OF KIN ──
+  async function saveNextOfKin(){
+    var fullName=document.getElementById('f_kinName').value.trim();
+    var relationship=document.getElementById('f_kinRelationship').value.trim();
+    var phone=document.getElementById('f_kinPhone').value.trim();
+    var email=document.getElementById('f_kinEmail').value.trim();
+    var address=document.getElementById('f_kinAddress').value.trim();
+    var ok=true;
+
+    ['kinName','kinRelationship','kinPhone','kinEmail'].forEach(function(f){
+      document.getElementById('e_'+f).textContent='';
+      document.getElementById('f_'+f).classList.remove('error');
+    });
+
+    if(!fullName){
+      document.getElementById('e_kinName').textContent='Required.';
+      document.getElementById('f_kinName').classList.add('error');
+      ok=false;
+    }
+    if(!relationship){
+      document.getElementById('e_kinRelationship').textContent='Required.';
+      document.getElementById('f_kinRelationship').classList.add('error');
+      ok=false;
+    }
+    if(!phone){
+      document.getElementById('e_kinPhone').textContent='Required.';
+      document.getElementById('f_kinPhone').classList.add('error');
+      ok=false;
+    }
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      document.getElementById('e_kinEmail').textContent='Enter a valid email.';
+      document.getElementById('f_kinEmail').classList.add('error');
+      ok=false;
+    }
+    if(!ok) return;
+
+    var btn = document.getElementById('saveKinBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+      await window.AppUtils.safeFetch('/api/profile/next-of-kin', {
+        method: 'PUT',
+        body: JSON.stringify({ fullName: fullName, relationship: relationship, phone: phone, email: email || null, address: address || null }),
+      });
+      unsaved.kin=false;
+      clearBtn('saveKinBtn');
+      toast('Next of kin details saved successfully.','success');
+    } catch(e){
+      toast(e.message||'Failed to save next of kin details','error');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
   function checkStrength(){
     var v=document.getElementById('f_newpass').value;
     var w=document.getElementById('strengthWrap');
@@ -500,431 +622,3 @@
 </script>
 </body>
 </html>
-
-
-<!--
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CommissionHub — Profile</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    &#45;&#45;blue:       #1a6ef5;
-    &#45;&#45;blue-light: #e8f0fe;
-    &#45;&#45;green:      #16a34a;
-    &#45;&#45;orange:     #ea580c;
-    &#45;&#45;red:        #dc2626;
-    &#45;&#45;text-primary:   #111827;
-    &#45;&#45;text-secondary: #6b7280;
-    &#45;&#45;text-muted:     #9ca3af;
-    &#45;&#45;border:         #e5e7eb;
-    &#45;&#45;bg:             #f9fafb;
-    &#45;&#45;white:          #ffffff;
-    &#45;&#45;sidebar-w:      240px;
-    &#45;&#45;radius:         12px;
-    &#45;&#45;shadow:         0 1px 4px rgba(0,0,0,.07), 0 0 1px rgba(0,0,0,.06);
-  }
-
-  body { font-family: 'DM Sans', sans-serif; background: var(&#45;&#45;bg); color: var(&#45;&#45;text-primary); display: flex; min-height: 100vh; font-size: 14px; }
-
-  /* ── SIDEBAR ── */
-  .sidebar { width: var(&#45;&#45;sidebar-w); min-height: 100vh; background: var(&#45;&#45;white); border-right: 1px solid var(&#45;&#45;border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100; padding: 22px 14px 24px; }
-  .brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; margin-bottom: 28px; }
-  .brand-icon { width: 36px; height: 36px; background: var(&#45;&#45;blue); border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
-  .brand-name { font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
-  .nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; color: var(&#45;&#45;text-secondary); font-weight: 500; font-size: 14px; transition: background .15s, color .15s; text-decoration: none; user-select: none; }
-  .nav-item:hover { background: var(&#45;&#45;bg); color: var(&#45;&#45;text-primary); }
-  .nav-item.active { background: var(&#45;&#45;blue); color: #fff; }
-  .nav-divider { border: none; border-top: 1px solid var(&#45;&#45;border); margin: 12px 0; }
-  .nav-item.logout { color: var(&#45;&#45;red); }
-  .nav-item.logout:hover { background: #fee2e2; color: var(&#45;&#45;red); }
-
-  /* ── MAIN ── */
-  .main { margin-left: var(&#45;&#45;sidebar-w); flex: 1; display: flex; flex-direction: column; }
-
-  /* ── TOPBAR ── */
-  .topbar { background: var(&#45;&#45;white); border-bottom: 1px solid var(&#45;&#45;border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-  .breadcrumb { font-size: 12px; color: var(&#45;&#45;text-muted); margin-bottom: 3px; }
-  .topbar-left h1 { font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
-  .notif-btn { position: relative; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(&#45;&#45;border); background: var(&#45;&#45;white); display: grid; place-items: center; cursor: pointer; transition: border-color .15s; }
-  .notif-btn:hover { border-color: var(&#45;&#45;blue); }
-  .notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid #fff; }
-  .avatar-topbar { width: 36px; height: 36px; background: var(&#45;&#45;blue); border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; }
-  .user-pill { display: flex; align-items: center; gap: 9px; cursor: pointer; }
-  .user-info .name { font-weight: 600; font-size: 13px; line-height: 1.2; }
-  .user-info .role { font-size: 11px; color: var(&#45;&#45;text-muted); }
-
-  /* ── CONTENT ── */
-  .content { padding: 26px 28px; display: flex; flex-direction: column; gap: 20px; max-width: 760px; }
-
-  /* ── CARDS ── */
-  .profile-card { background: var(&#45;&#45;white); border: 1px solid var(&#45;&#45;border); border-radius: var(&#45;&#45;radius); padding: 26px 28px; box-shadow: var(&#45;&#45;shadow); }
-  .profile-card:nth-child(1){ animation: fadeUp .3s both; }
-  .profile-card:nth-child(2){ animation: fadeUp .3s .05s both; }
-  .profile-card:nth-child(3){ animation: fadeUp .3s .10s both; }
-  .profile-card:nth-child(4){ animation: fadeUp .3s .15s both; }
-
-  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; gap: 16px; }
-  .card-title { font-size: 16px; font-weight: 700; letter-spacing: -.25px; }
-
-  .btn-save { display: inline-flex; align-items: center; gap: 8px; background: var(&#45;&#45;blue); color: #fff; border: none; border-radius: 10px; padding: 10px 20px; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .15s, box-shadow .15s, transform .15s; white-space: nowrap; flex-shrink: 0; }
-  .btn-save:hover { background: #1560d8; box-shadow: 0 4px 14px rgba(26,110,245,.32); transform: translateY(-1px); }
-
-  /* ── FORM ── */
-  .field-group { margin-bottom: 18px; }
-  .field-group:last-child { margin-bottom: 0; }
-  .field-label { font-size: 13px; font-weight: 600; color: var(&#45;&#45;text-primary); margin-bottom: 7px; }
-  .field-hint  { font-size: 12px; color: var(&#45;&#45;text-muted); margin-top: 5px; }
-  .field-error { font-size: 11.5px; color: #ef4444; margin-top: 4px; }
-
-  .icon-input-wrap { position: relative; }
-  .icon-input-wrap svg.fi { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(&#45;&#45;text-muted); transition: color .15s; }
-  .icon-input { width: 100%; height: 46px; padding: 0 14px 0 42px; border: 1.5px solid var(&#45;&#45;border); border-radius: 10px; font-family: inherit; font-size: 14px; color: var(&#45;&#45;text-primary); background: var(&#45;&#45;white); outline: none; transition: border-color .15s, box-shadow .15s; }
-  .icon-input:focus { border-color: var(&#45;&#45;blue); box-shadow: 0 0 0 3px var(&#45;&#45;blue-light); }
-  .icon-input-wrap:focus-within svg.fi { color: var(&#45;&#45;blue); }
-  .icon-input.error { border-color: #ef4444; }
-
-  .pass-wrap .icon-input { padding-right: 44px; }
-  .pass-eye { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(&#45;&#45;text-muted); display: grid; place-items: center; padding: 4px; transition: color .15s; }
-  .pass-eye:hover { color: var(&#45;&#45;text-primary); }
-
-  .strength-wrap { margin-top: 6px; }
-  .strength-bars { display: flex; gap: 4px; margin-bottom: 4px; }
-  .strength-bar { height: 4px; flex: 1; border-radius: 99px; background: #e5e7eb; transition: background .2s; }
-  .strength-label { font-size: 11.5px; color: var(&#45;&#45;text-muted); }
-
-  .info-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
-  .info-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .info-key { font-size: 13px; color: var(&#45;&#45;text-secondary); }
-  .info-val { font-size: 14px; font-weight: 600; }
-
-  .unsaved-dot { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; display: inline-block; margin-left: 8px; vertical-align: middle; animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
-
-  .toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
-  .toast { display: flex; align-items: center; gap: 10px; background: #1e293b; color: #fff; border-radius: 10px; padding: 12px 18px; font-size: 13.5px; font-weight: 500; box-shadow: 0 8px 30px rgba(0,0,0,.2); animation: slideRight .3s both; min-width: 240px; }
-  .toast.success svg { color: #4ade80; }
-  .toast.error   svg { color: #f87171; }
-  @keyframes slideRight { from{transform:translateX(40px);opacity:0;} to{transform:translateX(0);opacity:1;} }
-  @keyframes slideOut   { to{transform:translateX(40px);opacity:0;} }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
-</style>
-</head>
-<body>
-
-&lt;!&ndash; ══════════ SIDEBAR ══════════ &ndash;&gt;
-<aside class="sidebar">
-  <div class="brand">
-    <div class="brand-icon">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    </div>
-    <span class="brand-name">CommissionHub</span>
-  </div>
-  <nav class="nav">
-    <a class="nav-item" href="dashboard.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      Dashboard
-    </a>
-    <a class="nav-item" href="my-downlines.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      My Downlines
-    </a>
-    <a class="nav-item" href="my-commissions.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Commission History
-    </a>
-    <a class="nav-item" href="notifications.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      Notifications
-    </a>
-    <a class="nav-item active" href="#">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      Profile
-    </a>
-    <hr class="nav-divider"/>
-    <a class="nav-item logout" href="#" onclick="confirmLogout(event)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Logout
-    </a>
-  </nav>
-</aside>
-
-&lt;!&ndash; ══════════ MAIN ══════════ &ndash;&gt;
-<div class="main">
-  <header class="topbar">
-    <div class="topbar-left">
-      <div class="breadcrumb">Profile</div>
-      <h1>Profile</h1>
-    </div>
-    <div class="topbar-right">
-      <button class="notif-btn">
-        <div class="notif-dot"></div>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      </button>
-      <div class="user-pill">
-        <div class="avatar-topbar">JD</div>
-        <div class="user-info">
-          <div class="name">John Doe</div>
-          <div class="role">Distributor</div>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main class="content">
-
-    &lt;!&ndash; CARD 1: PERSONAL INFORMATION &ndash;&gt;
-    <div class="profile-card">
-      <div class="card-header">
-        <h2 class="card-title">Personal Information</h2>
-        <button class="btn-save" id="savePersonalBtn" onclick="savePersonal()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Save Changes
-        </button>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Full Name</div>
-        <div class="icon-input-wrap">
-          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input class="icon-input" type="text" id="f_name" value="John Doe" oninput="markUnsaved('personal')"/>
-        </div>
-        <span class="field-error" id="e_name"></span>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Email Address</div>
-        <div class="icon-input-wrap">
-          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <input class="icon-input" type="email" id="f_email" value="john@example.com" oninput="markUnsaved('personal')"/>
-        </div>
-        <span class="field-error" id="e_email"></span>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Phone Number</div>
-        <div class="icon-input-wrap">
-          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.9a16 16 0 0 0 6.08 6.08l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          <input class="icon-input" type="tel" id="f_phone" value="+1 234 567 8901" oninput="markUnsaved('personal')"/>
-        </div>
-      </div>
-    </div>
-
-    &lt;!&ndash; CARD 2: CHANGE PASSWORD &ndash;&gt;
-    <div class="profile-card">
-      <div class="card-header">
-        <h2 class="card-title">Change Password</h2>
-        <button class="btn-save" id="savePassBtn" onclick="savePassword()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Update Password
-        </button>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Current Password</div>
-        <div class="icon-input-wrap pass-wrap">
-          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input class="icon-input" type="password" id="f_current" placeholder="••••••••" oninput="markUnsaved('pass')"/>
-          <button class="pass-eye" type="button" onclick="togglePass('f_current',this)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-        <span class="field-error" id="e_current"></span>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">New Password</div>
-        <div class="icon-input-wrap pass-wrap">
-          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input class="icon-input" type="password" id="f_newpass" placeholder="••••••••" oninput="markUnsaved('pass'); checkStrength()"/>
-          <button class="pass-eye" type="button" onclick="togglePass('f_newpass',this)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-        <div class="strength-wrap" id="strengthWrap" style="display:none;">
-          <div class="strength-bars">
-            <div class="strength-bar" id="sb1"></div>
-            <div class="strength-bar" id="sb2"></div>
-            <div class="strength-bar" id="sb3"></div>
-            <div class="strength-bar" id="sb4"></div>
-          </div>
-          <div class="strength-label" id="strengthLabel"></div>
-        </div>
-        <span class="field-error" id="e_newpass"></span>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Confirm New Password</div>
-        <div class="icon-input-wrap pass-wrap">
-          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <input class="icon-input" type="password" id="f_confirm" placeholder="••••••••" oninput="markUnsaved('pass')"/>
-          <button class="pass-eye" type="button" onclick="togglePass('f_confirm',this)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-        <span class="field-error" id="e_confirm"></span>
-      </div>
-    </div>
-
-    &lt;!&ndash; CARD 3: NETWORK INFORMATION &ndash;&gt;
-    <div class="profile-card">
-      <div class="card-header" style="margin-bottom:4px;">
-        <h2 class="card-title">Network Information</h2>
-      </div>
-      <div class="info-row">
-        <span class="info-key">Sponsor (Upline)</span>
-        <span class="info-val">Jane Smith</span>
-      </div>
-      <div class="info-row">
-        <span class="info-key">Join Date</span>
-        <span class="info-val">January 15, 2025</span>
-      </div>
-    </div>
-
-    &lt;!&ndash; CARD 4: BANK DETAILS &ndash;&gt;
-    <div class="profile-card">
-      <div class="card-header">
-        <h2 class="card-title">Bank Details</h2>
-        <button class="btn-save" id="saveBankBtn" onclick="saveBank()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Save Bank Details
-        </button>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Account Holder Name</div>
-        <div class="icon-input-wrap">
-          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <input class="icon-input" type="text" id="f_holderName" placeholder="John Doe" oninput="markUnsaved('bank')"/>
-        </div>
-        <span class="field-error" id="e_holderName"></span>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Bank Name</div>
-        <div class="icon-input-wrap">
-          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          <input class="icon-input" type="text" id="f_bankName" placeholder="Chase Bank" oninput="markUnsaved('bank')"/>
-        </div>
-        <span class="field-error" id="e_bankName"></span>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label">Account Number</div>
-        <div class="icon-input-wrap">
-          <svg class="fi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          <input class="icon-input" type="text" id="f_acctNum" placeholder="****5678" oninput="markUnsaved('bank')"/>
-        </div>
-        <div class="field-hint">Your account number is securely stored and encrypted</div>
-        <span class="field-error" id="e_acctNum"></span>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-&lt;!&ndash; TOAST &ndash;&gt;
-<div class="toast-wrap" id="toastWrap"></div>
-
-<script>
-var unsaved = { personal: false, pass: false, bank: false };
-var ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
-var BTN_LABELS = { savePersonalBtn:'Save Changes', savePassBtn:'Update Password', saveBankBtn:'Save Bank Details' };
-var SECTION_BTN = { personal:'savePersonalBtn', pass:'savePassBtn', bank:'saveBankBtn' };
-
-function markUnsaved(s){
-  if(!unsaved[s]){
-    unsaved[s]=true;
-    var id=SECTION_BTN[s];
-    document.getElementById(id).innerHTML=ICON+BTN_LABELS[id]+' <span class="unsaved-dot"></span>';
-  }
-}
-function clearBtn(id){ document.getElementById(id).innerHTML=ICON+BTN_LABELS[id]; }
-
-function savePersonal(){
-  var name=document.getElementById('f_name').value.trim();
-  var email=document.getElementById('f_email').value.trim();
-  var ok=true;
-  document.getElementById('e_name').textContent=''; document.getElementById('f_name').classList.remove('error');
-  document.getElementById('e_email').textContent=''; document.getElementById('f_email').classList.remove('error');
-  if(!name){ document.getElementById('e_name').textContent='Name is required.'; document.getElementById('f_name').classList.add('error'); ok=false; }
-  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('e_email').textContent='Enter a valid email.'; document.getElementById('f_email').classList.add('error'); ok=false; }
-  if(!ok) return;
-  unsaved.personal=false; clearBtn('savePersonalBtn');
-  toast('Personal information updated successfully.','success');
-}
-
-function savePassword(){
-  var cur=document.getElementById('f_current').value;
-  var np=document.getElementById('f_newpass').value;
-  var cf=document.getElementById('f_confirm').value;
-  var ok=true;
-  ['current','newpass','confirm'].forEach(function(f){ document.getElementById('e_'+f).textContent=''; document.getElementById('f_'+f).classList.remove('error'); });
-  if(!cur){ document.getElementById('e_current').textContent='Enter your current password.'; document.getElementById('f_current').classList.add('error'); ok=false; }
-  if(!np||np.length<8){ document.getElementById('e_newpass').textContent='Minimum 8 characters.'; document.getElementById('f_newpass').classList.add('error'); ok=false; }
-  if(np!==cf){ document.getElementById('e_confirm').textContent='Passwords do not match.'; document.getElementById('f_confirm').classList.add('error'); ok=false; }
-  if(!ok) return;
-  ['f_current','f_newpass','f_confirm'].forEach(function(id){ document.getElementById(id).value=''; });
-  document.getElementById('strengthWrap').style.display='none';
-  unsaved.pass=false; clearBtn('savePassBtn');
-  toast('Password updated successfully.','success');
-}
-
-function saveBank(){
-  var hn=document.getElementById('f_holderName').value.trim();
-  var bn=document.getElementById('f_bankName').value.trim();
-  var an=document.getElementById('f_acctNum').value.trim();
-  var ok=true;
-  ['holderName','bankName','acctNum'].forEach(function(f){ document.getElementById('e_'+f).textContent=''; document.getElementById('f_'+f).classList.remove('error'); });
-  if(!hn){ document.getElementById('e_holderName').textContent='Required.'; document.getElementById('f_holderName').classList.add('error'); ok=false; }
-  if(!bn){ document.getElementById('e_bankName').textContent='Required.'; document.getElementById('f_bankName').classList.add('error'); ok=false; }
-  if(!an){ document.getElementById('e_acctNum').textContent='Required.'; document.getElementById('f_acctNum').classList.add('error'); ok=false; }
-  if(!ok) return;
-  unsaved.bank=false; clearBtn('saveBankBtn');
-  toast('Bank details saved securely.','success');
-}
-
-function checkStrength(){
-  var v=document.getElementById('f_newpass').value;
-  var w=document.getElementById('strengthWrap');
-  if(!v){ w.style.display='none'; return; }
-  w.style.display='block';
-  var s=0;
-  if(v.length>=8) s++; if(/[A-Z]/.test(v)) s++; if(/[0-9]/.test(v)) s++; if(/[^A-Za-z0-9]/.test(v)) s++;
-  var C=['#ef4444','#f97316','#eab308','#22c55e'],L=['Weak','Fair','Good','Strong'],T=['#dc2626','#ea580c','#ca8a04','#16a34a'];
-  for(var i=1;i<=4;i++) document.getElementById('sb'+i).style.background=i<=s?C[s-1]:'#e5e7eb';
-  var el=document.getElementById('strengthLabel'); el.textContent=L[s-1]||''; el.style.color=T[s-1]||'#9ca3af';
-}
-
-function togglePass(id,btn){
-  var inp=document.getElementById(id); var show=inp.type==='text'; inp.type=show?'password':'text';
-  var O='<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-  var X='<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
-  btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(show?O:X)+'</svg>';
-}
-
-function confirmLogout(e){
-  e.preventDefault();
-  window.location.href = '../index.html';
-}
-
-function toast(msg,type){
-  type=type||'success';
-  var wrap=document.getElementById('toastWrap');
-  var el=document.createElement('div'); el.className='toast '+type;
-  var p=type==='success'?'<polyline points="20 6 9 17 4 12"/>':'<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
-  el.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>'+msg;
-  wrap.appendChild(el);
-  setTimeout(function(){ el.style.animation='slideOut .3s both'; setTimeout(function(){ el.remove(); },300); },3500);
-}
-</script>
-</body>
-</html>
--->

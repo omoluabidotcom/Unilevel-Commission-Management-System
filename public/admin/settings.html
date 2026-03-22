@@ -53,6 +53,8 @@
     }
     .nav-item:hover { background: var(--bg); color: var(--text-primary); }
     .nav-item.active { background: var(--blue); color: #fff; }
+    .nav-item.logout { color: #dc2626; }
+    .nav-item.logout:hover { background: #fee2e2; color: #dc2626; }
 
     /* ── MAIN ── */
     .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
@@ -265,10 +267,12 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       Admin Management
     </a>
+    <!--
     <a class="nav-item" href="notifications.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       Notifications
     </a>
+    -->
     <a class="nav-item active" href="#">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Settings
@@ -277,7 +281,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       Profile
     </a>
-    <a class="nav-item" href="#" onclick="logout()">
+    <a class="nav-item logout" href="#" onclick="logout()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Logout
     </a>
@@ -317,7 +321,7 @@
 
     <!-- CONTENT HEADER -->
     <div class="content-header">
-      <p>Manage system configuration and preferences</p>
+      <p>Manage commission configuration</p>
       <button class="btn-save" id="saveBtn" onclick="saveSettings()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Save Changes
@@ -352,153 +356,6 @@
       </div>
     </div>
 
-    <!-- ── NOTIFICATION SETTINGS ── -->
-    <div class="settings-card">
-      <div class="card-title-row">
-        <div class="card-icon orange">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        </div>
-        <h2 class="card-title">Notification Settings</h2>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <div class="toggle-label">Email Notifications</div>
-          <div class="toggle-desc">Receive email notifications for important updates</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="emailNotif" checked onchange="markUnsaved()"/>
-          <span class="toggle-track"></span>
-        </label>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <div class="toggle-label">Push Notifications</div>
-          <div class="toggle-desc">Receive push notifications in your browser</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="pushNotif" onchange="markUnsaved()"/>
-          <span class="toggle-track"></span>
-        </label>
-      </div>
-
-      <hr class="field-divider"/>
-
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <div class="toggle-label">New Distributor Alerts</div>
-          <div class="toggle-desc">Get notified when a new distributor registers</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="distAlert" checked onchange="markUnsaved()"/>
-          <span class="toggle-track"></span>
-        </label>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <div class="toggle-label">Commission Processed Alerts</div>
-          <div class="toggle-desc">Get notified when commissions are processed</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="commAlert" checked onchange="markUnsaved()"/>
-          <span class="toggle-track"></span>
-        </label>
-      </div>
-
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <div class="toggle-label">Below Minimum Threshold Alerts</div>
-          <div class="toggle-desc">Alert when distributors fall below minimum purchase</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="minAlert" checked onchange="markUnsaved()"/>
-          <span class="toggle-track"></span>
-        </label>
-      </div>
-    </div>
-
-    <!-- ── SYSTEM SETTINGS ── -->
-    <div class="settings-card">
-      <div class="card-title-row">
-        <div class="card-icon purple">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </div>
-        <h2 class="card-title">System Settings</h2>
-      </div>
-
-      <div class="two-col">
-        <div class="field-group">
-          <div class="field-label">Default Currency</div>
-          <div class="select-wrap">
-            <select class="field-select" id="currency" onchange="onCurrencyChange()">
-              <option value="USD" selected>USD — US Dollar ($)</option>
-              <option value="EUR">EUR — Euro (€)</option>
-              <option value="GBP">GBP — British Pound (£)</option>
-              <option value="NGN">NGN — Nigerian Naira (₦)</option>
-              <option value="CAD">CAD — Canadian Dollar (C$)</option>
-            </select>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-          <div class="field-hint">Currency used across the platform</div>
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">Commission Calculation Period</div>
-          <div class="select-wrap">
-            <select class="field-select" id="calcPeriod" onchange="markUnsaved()">
-              <option value="monthly" selected>Monthly</option>
-              <option value="weekly">Weekly</option>
-              <option value="quarterly">Quarterly</option>
-            </select>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-          <div class="field-hint">How often commissions are calculated</div>
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">Commission Payout Day</div>
-          <div class="input-wrap">
-            <input class="field-input" type="number" id="payoutDay" value="1" min="1" max="28" oninput="markUnsaved()"/>
-          </div>
-          <div class="field-hint">Day of the month commissions are paid (1–28)</div>
-        </div>
-
-        <div class="field-group">
-          <div class="field-label">Maximum Network Depth</div>
-          <div class="input-wrap">
-            <input class="field-input" type="number" id="networkDepth" value="5" min="1" max="20" oninput="markUnsaved()"/>
-          </div>
-          <div class="field-hint">Maximum levels in the downline network</div>
-        </div>
-      </div>
-
-      <hr class="field-divider"/>
-
-      <div class="toggle-row">
-        <div class="toggle-info">
-          <div class="toggle-label">Auto-approve Commissions</div>
-          <div class="toggle-desc">Automatically approve commissions without manual review</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="autoApprove" onchange="markUnsaved()"/>
-          <span class="toggle-track"></span>
-        </label>
-      </div>
-
-      <div class="toggle-row" style="margin-top:20px;">
-        <div class="toggle-info">
-          <div class="toggle-label">Allow Distributor Self-Registration</div>
-          <div class="toggle-desc">Let distributors register without an admin invite</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="selfReg" checked onchange="markUnsaved()"/>
-          <span class="toggle-track"></span>
-        </label>
-      </div>
-    </div>
-
   </main>
 </div>
 
@@ -509,6 +366,7 @@
 <script src="../js/utils.js"></script>
 <script>
   var hasUnsaved = false;
+  var currentSettings = null;
   var svgSave = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
 
   function markUnsaved(){
@@ -528,9 +386,9 @@
     try {
       var data = await window.AppUtils.safeFetch('/api/settings');
       var s = data.settings;
+      currentSettings = s;
 
-      // Set currency first, then load rate
-      document.getElementById('currency').value = s.currencyCode || 'USD';
+      // Load current currency from backend settings for display conversion
       updateCurrencyPrefix();
       AppCurrency.reset();
       await AppCurrency.load();
@@ -542,16 +400,6 @@
       document.getElementById('commPct').value      = typeof s.commissionPercentage === 'object'
         ? (s.commissionPercentage.level1 || 15)
         : (s.commissionPercentage ?? 15);
-      document.getElementById('calcPeriod').value   = s.calcPeriod     || 'monthly';
-      document.getElementById('payoutDay').value    = s.payoutDay      ?? 1;
-      document.getElementById('networkDepth').value = s.networkDepth   ?? 5;
-      document.getElementById('emailNotif').checked = s.emailNotif     ?? true;
-      document.getElementById('pushNotif').checked  = s.pushNotif      ?? false;
-      document.getElementById('distAlert').checked  = s.distAlert      ?? true;
-      document.getElementById('commAlert').checked  = s.commAlert      ?? true;
-      document.getElementById('minAlert').checked   = s.minAlert       ?? true;
-      document.getElementById('autoApprove').checked= s.autoApprove    ?? false;
-      document.getElementById('selfReg').checked    = s.selfReg        ?? true;
     } catch(e) {
       toast('Failed to load settings: ' + e.message, true);
     }
@@ -564,11 +412,14 @@
     var rate = AppCurrency.rate() || 1;
     var minP = minDisplayed / rate;  // always save as USD
     var pct  = parseFloat(document.getElementById('commPct').value);
-    var day  = parseInt(document.getElementById('payoutDay').value);
 
     if(isNaN(minP) || minP < 0){ showError('Minimum purchase must be a positive number.'); return; }
     if(isNaN(pct)  || pct < 0 || pct > 100){ showError('Commission percentage must be between 0 and 100.'); return; }
-    if(isNaN(day)  || day < 1 || day > 28) { showError('Payout day must be between 1 and 28.'); return; }
+
+    if(!currentSettings){
+      showError('Settings are not loaded yet. Please refresh and try again.');
+      return;
+    }
 
     var btn = document.getElementById('saveBtn');
     btn.disabled = true; btn.textContent = 'Saving…';
@@ -578,18 +429,18 @@
         method: 'PUT',
         body: JSON.stringify({
           minMonthlyPurchase:   minP,
-          currencyCode:         document.getElementById('currency').value,
+          currencyCode:         currentSettings.currencyCode || 'USD',
           commissionPercentage: pct,
-          payoutDay:            day,
-          networkDepth:         parseInt(document.getElementById('networkDepth').value),
-          calcPeriod:           document.getElementById('calcPeriod').value,
-          emailNotif:           document.getElementById('emailNotif').checked,
-          pushNotif:            document.getElementById('pushNotif').checked,
-          distAlert:            document.getElementById('distAlert').checked,
-          commAlert:            document.getElementById('commAlert').checked,
-          minAlert:             document.getElementById('minAlert').checked,
-          autoApprove:          document.getElementById('autoApprove').checked,
-          selfReg:              document.getElementById('selfReg').checked,
+          payoutDay:            currentSettings.payoutDay,
+          networkDepth:         currentSettings.networkDepth,
+          calcPeriod:           currentSettings.calcPeriod,
+          emailNotif:           currentSettings.emailNotif,
+          pushNotif:            currentSettings.pushNotif,
+          distAlert:            currentSettings.distAlert,
+          commAlert:            currentSettings.commAlert,
+          minAlert:             currentSettings.minAlert,
+          autoApprove:          currentSettings.autoApprove,
+          selfReg:              currentSettings.selfReg,
         }),
       });
 
@@ -622,27 +473,8 @@
     setTimeout(function(){ el.style.animation='slideOut .3s both'; setTimeout(function(){ el.remove(); },300); }, 3500);
   }
 
-  var _lastMinUSD = 0; // track the USD value of min purchase
-
   function updateCurrencyPrefix(){
-    var symbols = {USD:'$',EUR:'€',GBP:'£',NGN:'₦',CAD:'C$',GHS:'₵',KES:'KSh',ZAR:'R',AUD:'A$',JPY:'¥',INR:'₹'};
-    var code = document.getElementById('currency').value;
-    document.getElementById('currencyPrefix').textContent = symbols[code] || code;
-  }
-
-  async function onCurrencyChange(){
-    markUnsaved();
-    updateCurrencyPrefix();
-
-    // Get current displayed value → convert back to USD using OLD rate
-    var displayed = parseFloat(document.getElementById('minPurchase').value) || 0;
-    var oldRate = AppCurrency.rate() || 1;
-    _minUSD = displayed / oldRate; // update our USD reference
-
-    // Load new rate and re-display in new currency
-    AppCurrency.reset();
-    await AppCurrency.load();
-    document.getElementById('minPurchase').value = Math.round(AppCurrency.convert(_minUSD));
+    document.getElementById('currencyPrefix').textContent = AppCurrency.symbol();
   }
 
   window.addEventListener('DOMContentLoaded', loadSettings);

@@ -551,8 +551,13 @@ async function findUserById(id) {
     await pool.execute('ALTER TABLE users ADD COLUMN bank_details JSON');
   } catch(e) { /* already exists */ }
 
+  // Ensure next_of_kin column exists
+  try {
+    await pool.execute('ALTER TABLE users ADD COLUMN next_of_kin JSON');
+  } catch(e) { /* already exists */ }
+
   const [rows] = await pool.execute(
-    'SELECT u.id, u.email, u.full_name, u.phone, u.profile_picture, u.role, u.is_active, u.created_at, u.last_login, u.sponsor_id, COALESCE(u.bank_details, NULL) AS bank_details, s.full_name AS sponsor_name FROM users u LEFT JOIN users s ON s.id = u.sponsor_id WHERE u.id = ? LIMIT 1', [id]
+    'SELECT u.id, u.email, u.full_name, u.phone, u.profile_picture, u.role, u.is_active, u.created_at, u.last_login, u.sponsor_id, COALESCE(u.bank_details, NULL) AS bank_details, COALESCE(u.next_of_kin, NULL) AS next_of_kin, s.full_name AS sponsor_name FROM users u LEFT JOIN users s ON s.id = u.sponsor_id WHERE u.id = ? LIMIT 1', [id]
   );
   const row = rows?.[0];
   if (!row) return undefined;
@@ -570,6 +575,9 @@ async function findUserById(id) {
     sponsorName: row.sponsor_name || null,
     bankDetails: row.bank_details
       ? (typeof row.bank_details === 'string' ? JSON.parse(row.bank_details) : row.bank_details)
+      : null,
+    nextOfKin: row.next_of_kin
+      ? (typeof row.next_of_kin === 'string' ? JSON.parse(row.next_of_kin) : row.next_of_kin)
       : null,
   };
 }
@@ -733,6 +741,72 @@ async function updateUser(id, { fullName, email, phone, sponsor, status, isActiv
   };
 }
 
+async function registerDistributor({ fullName, email, phone, password, sponsorId }) {
+  const pool = await getPool();
+
+  // Check for duplicate email
+  const [existing] = await pool.execute(
+    'SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1', [email]
+  );
+  if (existing.length) {
+    throw new Error('A user with this email already exists');
+  }
+
+  // Check for duplicate phone
+  if (phone) {
+    const [existingPhone] = await pool.execute(
+      'SELECT id FROM users WHERE phone = ? LIMIT 1', [phone]
+    );
+    if (existingPhone.length) {
+      throw new Error('A user with this phone number already exists');
+    }
+  }
+
+  // Validate sponsor if provided
+  if (sponsorId) {
+    const [sponsorRows] = await pool.execute(
+      'SELECT id FROM users WHERE id = ? LIMIT 1', [sponsorId]
+    );
+    if (!sponsorRows.length) {
+      throw new Error('Invalid sponsor ID');
+    }
+  }
+
+  // Generate username
+  const nameParts = fullName.trim().split(/\s+/);
+  const firstName4 = (nameParts[0] || '').slice(0, 4);
+  const lastName4  = (nameParts.slice(1).join(' ') || '').slice(0, 4);
+  const baseUsername = firstName4 + lastName4;
+
+  const [uRows] = await pool.execute(
+    'SELECT username FROM users WHERE username LIKE ?', [baseUsername + '%']
+  );
+  let username = baseUsername;
+  if (uRows.some(r => r.username === baseUsername)) {
+    let counter = 1;
+    while (uRows.some(r => r.username === baseUsername + counter)) counter++;
+    username = baseUsername + counter;
+  }
+
+  // Hash password
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const [result] = await pool.execute(
+    'INSERT INTO users (username, full_name, email, phone, role, sponsor_id, is_active, password_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [username, fullName, email, phone || null, 'distributor', sponsorId || null, 1, passwordHash]
+  );
+
+  return {
+    id: String(result.insertId),
+    username,
+    fullName,
+    email,
+    phone,
+    role: 'distributor',
+    sponsorId: sponsorId ? String(sponsorId) : null,
+  };
+}
+
 module.exports = {
   getPool,
   ensureProfilePictureColumn,
@@ -758,5 +832,6 @@ module.exports = {
   listCommissionsForUser,
   listAllCommissions,
   listAdmins,
+  registerDistributor,
   dbConfig,
 };

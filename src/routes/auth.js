@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { findUserByEmail, updateLastLogin } = require('../db/connection');
+const { findUserByEmail, updateLastLogin, registerDistributor } = require('../db/connection');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
@@ -27,6 +27,43 @@ router.post('/login', async (req, res) => {
   );
 
   res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+});
+
+router.post('/register', async (req, res) => {
+  try {
+    const { fullName, email, phone, password, confirmPassword, sponsorId } = req.body;
+
+    // Validate required fields
+    if (!fullName || !email || !password) {
+      return res.status(400).json({ message: 'Full name, email, and password are required' });
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    // Validate password match
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
+    // Register the distributor account
+    await registerDistributor({
+      fullName: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      phone: phone ? phone.trim() : null,
+      password,
+      sponsorId: sponsorId || null,
+    });
+
+    res.status(201).json({
+      message: 'Account created successfully. Please sign in.'
+    });
+  } catch (err) {
+    console.error('register error:', err);
+    res.status(400).json({ message: err.message || 'Registration failed' });
+  }
 });
 
 module.exports = router;

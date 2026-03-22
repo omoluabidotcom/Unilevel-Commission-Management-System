@@ -1,5 +1,22 @@
 // Renders the admin sidebar menu and keeps the active page highlighted.
 (function () {
+  function ensureAdminNavStyles() {
+    if (document.getElementById('adminNavSharedStyles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'adminNavSharedStyles';
+    style.textContent = `
+      #adminSidebar .nav-item.logout {
+        color: #dc2626;
+      }
+      #adminSidebar .nav-item.logout:hover {
+        background: #fee2e2;
+        color: #dc2626;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   const menuItems = [
     {
       key: 'dashboard',
@@ -60,6 +77,7 @@
         </svg>
       `,
     },
+    /*
     {
       key: 'notifications',
       label: 'Notifications',
@@ -72,6 +90,7 @@
         </svg>
       `,
     },
+    */
     {
       key: 'settings',
       label: 'Settings',
@@ -151,6 +170,10 @@
       a.className = 'nav-item';
       a.href = item.href;
 
+      if (item.key === 'logout') {
+        a.classList.add('logout');
+      }
+
       const badgeHtml = item.badgeId
         ? `<span id="${item.badgeId}" class="nav-badge" style="margin-left:auto;"></span>`
         : '';
@@ -177,5 +200,6 @@
     sidebar.appendChild(nav);
   }
 
+  ensureAdminNavStyles();
   renderSidebar();
 })();

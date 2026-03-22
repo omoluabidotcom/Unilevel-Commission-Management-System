@@ -114,6 +114,34 @@ router.put('/bank', requireAuth, async (req, res) => {
   }
 });
 
+// PUT /api/profile/next-of-kin — save next of kin details
+router.put('/next-of-kin', requireAuth, async (req, res) => {
+  try {
+    const { fullName, relationship, phone, email, address } = req.body;
+    if (!fullName || !relationship || !phone) {
+      return res.status(400).json({ message: 'Full name, relationship, and phone are required' });
+    }
+
+    const id = req.user.userId || req.user.id;
+    const pool = await getPool();
+
+    // Ensure column exists
+    try {
+      await pool.execute('ALTER TABLE users ADD COLUMN next_of_kin JSON');
+    } catch(e) { /* already exists */ }
+
+    await pool.execute(
+      'UPDATE users SET next_of_kin = ? WHERE id = ?',
+      [JSON.stringify({ fullName, relationship, phone, email: email || null, address: address || null }), id]
+    );
+
+    res.json({ message: 'Next of kin details saved' });
+  } catch (err) {
+    console.error('saveNextOfKin error:', err);
+    res.status(500).json({ message: 'Failed to save next of kin details' });
+  }
+});
+
 // PUT /api/profile/bank — save bank details as JSON
 router.put('/bank', requireAuth, async (req, res) => {
   try {
