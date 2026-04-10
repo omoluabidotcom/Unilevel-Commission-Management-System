@@ -41,7 +41,7 @@ async function fetchLiveRate(toCurrency) {
 router.get('/public', async (req, res) => {
   try {
     const settings = await getSettings();
-    if (!settings) return res.json({ minMonthlyPurchase: 0, currencyCode: 'USD', rate: 1 });
+    if (!settings) return res.json({ minMonthlyPurchase: 0, currencyCode: 'NGN', rate: 1 });
     const rate = await fetchLiveRate(settings.currencyCode);
     res.json({
       minMonthlyPurchase: settings.minMonthlyPurchase,
@@ -89,7 +89,7 @@ router.put('/', requireAuth, requireRole('admin'), async (req, res) => {
 
     const settings = await updateSettings({
       minMonthlyPurchase: parseFloat(minMonthlyPurchase),
-      currencyCode: currencyCode || 'USD',
+      currencyCode: currencyCode || 'NGN',
       commissionPercentage: parseFloat(commissionPercentage) || 0,
       payoutDay: parseInt(payoutDay) || 1,
       networkDepth: parseInt(networkDepth) || 5,

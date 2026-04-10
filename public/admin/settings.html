@@ -250,18 +250,18 @@
     <a class="nav-item" href="dashboard.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Dashboard
-    </a>
-    <a class="nav-item" href="distributors.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Distributors
-    </a>
+    </a>    
     <a class="nav-item" href="commissions.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Commission
+      Commissions
     </a>
     <a class="nav-item" href="purchases.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       Purchases
+    </a>
+    <a class="nav-item" href="distributors.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Distributors
     </a>
     <a class="nav-item" href="admin-management.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -340,7 +340,7 @@
       <div class="field-group">
         <div class="field-label">Minimum Monthly Purchase Requirement</div>
         <div class="input-wrap">
-          <div class="input-prefix" id="currencyPrefix">$</div>
+          <div class="input-prefix" id="currencyPrefix">₦</div>
           <input class="field-input has-prefix" type="number" id="minPurchase" value="100" min="0" step="1" oninput="markUnsaved()"/>
         </div>
         <div class="field-hint">Distributors must meet this minimum to qualify for commissions</div>
@@ -429,7 +429,7 @@
         method: 'PUT',
         body: JSON.stringify({
           minMonthlyPurchase:   minP,
-          currencyCode:         currentSettings.currencyCode || 'USD',
+          currencyCode:         currentSettings.currencyCode || 'NGN',
           commissionPercentage: pct,
           payoutDay:            currentSettings.payoutDay,
           networkDepth:         currentSettings.networkDepth,

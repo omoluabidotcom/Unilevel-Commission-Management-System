@@ -18,8 +18,8 @@ window.AppCurrency = (function () {
   };
 
   var _settings = {};
-  var _code     = 'USD';
-  var _symbol   = '$';
+  var _code     = 'NGN';
+  var _symbol   = '₦';
   var _rate     = 1;
   var _loaded   = false;
 
