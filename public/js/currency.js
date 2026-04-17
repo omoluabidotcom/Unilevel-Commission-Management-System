@@ -30,11 +30,9 @@ window.AppCurrency = (function () {
       if (res.ok) {
         var data = await res.json();
         _settings = data;
-        if (data.currencyCode) {
-          _code   = data.currencyCode;
-          _symbol = SYMBOLS[_code] || _code;
-          _rate   = Number(data.rate) || 1;
-        }
+        _code = 'NGN';
+        _symbol = SYMBOLS.NGN;
+        _rate = 1;
       }
     } catch (e) {
       console.warn('AppCurrency: could not load settings, using defaults.', e.message);
@@ -45,10 +43,10 @@ window.AppCurrency = (function () {
   /** Get any setting value by key */
   function setting(key) { return _settings[key]; }
 
-  /** Convert a USD-stored amount to the display currency */
-  function convert(n) { return Number(n || 0) * _rate; }
+  /** NGN-only mode: conversion is a no-op. */
+  function convert(n) { return Number(n || 0); }
 
-  /** Format a USD-stored amount into display currency string */
+  /** Format a NGN amount into display currency string */
   function fmt(n, decimals) {
     if (decimals === undefined) decimals = 2;
     if (_code === 'JPY' || _code === 'KRW') decimals = 0;

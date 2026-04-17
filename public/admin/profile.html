@@ -711,7 +711,7 @@
     document.getElementById('f_email').classList.remove('error');
 
     if(!name){ document.getElementById('e_name').textContent='Name is required.'; document.getElementById('f_name').classList.add('error'); valid=false; }
-    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+₦/.test(email)){ document.getElementById('e_email').textContent='Enter a valid email.'; document.getElementById('f_email').classList.add('error'); valid=false; }
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ document.getElementById('e_email').textContent='Enter a valid email.'; document.getElementById('f_email').classList.add('error'); valid=false; }
     if(!valid) return;
 
     var btn = document.getElementById('savePersonalBtn');

@@ -378,9 +378,6 @@
   }
 
   // ── LOAD SETTINGS FROM DB ──
-  // DB always stores minMonthlyPurchase in USD.
-  // We display it converted to the selected currency.
-  var _minUSD = 0; // keep track of the USD value for save-back
 
   async function loadSettings(){
     try {
@@ -388,14 +385,11 @@
       var s = data.settings;
       currentSettings = s;
 
-      // Load current currency from backend settings for display conversion
-      updateCurrencyPrefix();
       AppCurrency.reset();
       await AppCurrency.load();
+      updateCurrencyPrefix();
 
-      // Store USD value, display in current currency
-      _minUSD = Number(s.minMonthlyPurchase ?? 0);
-      document.getElementById('minPurchase').value = Math.round(AppCurrency.convert(_minUSD));
+      document.getElementById('minPurchase').value = Number(s.minMonthlyPurchase ?? 0);
 
       document.getElementById('commPct').value      = typeof s.commissionPercentage === 'object'
         ? (s.commissionPercentage.level1 || 15)
@@ -407,10 +401,7 @@
 
   // ── SAVE SETTINGS TO DB ──
   async function saveSettings(){
-    // Convert displayed value back to USD before saving
-    var minDisplayed = parseFloat(document.getElementById('minPurchase').value);
-    var rate = AppCurrency.rate() || 1;
-    var minP = minDisplayed / rate;  // always save as USD
+    var minP = parseFloat(document.getElementById('minPurchase').value);
     var pct  = parseFloat(document.getElementById('commPct').value);
 
     if(isNaN(minP) || minP < 0){ showError('Minimum purchase must be a positive number.'); return; }
@@ -448,6 +439,7 @@
       btn.innerHTML = svgSave + 'Save Changes';
       AppCurrency.reset(); // force reload of rate on next page
       await AppCurrency.load(); // reload immediately so prefix stays correct
+      updateCurrencyPrefix();
       toast('Settings saved successfully.');
     } catch(e) {
       showError(e.message || 'Failed to save settings');
