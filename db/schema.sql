@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS commissions (
 CREATE TABLE IF NOT EXISTS settings (
   id TINYINT UNSIGNED PRIMARY KEY,
   min_monthly_purchase DECIMAL(12,2) DEFAULT 50.00,
-  currency_code CHAR(3) DEFAULT 'USD',
+  currency_code CHAR(3) DEFAULT 'NGN',
   commission_percentage JSON NOT NULL
 );
 

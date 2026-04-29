@@ -5,7 +5,7 @@
  * Usage:
  *   const s = await AppSettings.get();
  *   console.log(s.minMonthlyPurchase); // e.g. 100
- *   console.log(s.currencyCode);       // e.g. "USD"
+ *   console.log(s.currencyCode);       // e.g. "NGN"
  */
 window.AppSettings = (function () {
   var _cache = null;
@@ -19,7 +19,7 @@ window.AppSettings = (function () {
       _cache = await res.json();
     } catch (e) {
       console.warn('AppSettings: could not load settings, using defaults.', e.message);
-      _cache = { minMonthlyPurchase: 0, currencyCode: 'USD' };
+      _cache = { minMonthlyPurchase: 0, currencyCode: 'NGN' };
     }
     return _cache;
   }

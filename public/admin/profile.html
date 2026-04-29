@@ -343,18 +343,18 @@
     <a class="nav-item" href="dashboard.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Dashboard
-    </a>
-    <a class="nav-item" href="distributors.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Distributors
-    </a>
+    </a>    
     <a class="nav-item" href="commissions.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Commission
+      Commissions
     </a>
     <a class="nav-item" href="purchases.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       Purchases
+    </a>
+    <a class="nav-item" href="distributors.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Distributors
     </a>
     <a class="nav-item" href="admin-management.html">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -421,7 +421,7 @@
       </div>
 
       <!-- Avatar -->
-      <div class="avatar-section">
+      <!-- <div class="avatar-section">
         <div class="avatar-large" id="avatarCircle">
           <img id="avatarImg" src="" alt=""/>
           <span id="avatarInitials">AU</span>
@@ -434,7 +434,7 @@
           <div class="user-role" id="displayRole">Administrator</div>
           <button class="btn-upload" onclick="openPhotoModal()">Upload Photo</button>
         </div>
-      </div>
+      </div> -->
 
       <!-- Fields -->
       <div class="field-group">
@@ -626,6 +626,11 @@
   var unsavedPass     = false;
   var currentUserId   = null;
 
+  function setTextIfExists(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
   // ── HELPERS ──
   function capitalize(s){ return s ? s[0].toUpperCase() + s.slice(1) : ''; }
   function fmtDate(d){
@@ -651,12 +656,12 @@
 
       var initials = (u.name || u.email || '?').split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
 
-      document.getElementById('avatarInitials').textContent = initials;
-      document.getElementById('topbarInitial').textContent  = initials[0] || 'A';
+      setTextIfExists('avatarInitials', initials);
+      setTextIfExists('topbarInitial', initials[0] || 'A');
       setAvatarPhoto(u.profilePicture || null);
-      document.getElementById('displayName').textContent    = u.name  || u.email;
-      document.getElementById('topbarName').textContent     = u.name  || u.email;
-      document.getElementById('topbarRole').textContent     = capitalize(u.role || 'admin');
+      setTextIfExists('displayName', u.name || u.email);
+      setTextIfExists('topbarName', u.name || u.email);
+      setTextIfExists('topbarRole', capitalize(u.role || 'admin'));
 
       document.getElementById('f_name').value  = u.name  || '';
       document.getElementById('f_email').value = u.email || '';
@@ -718,10 +723,10 @@
         body: JSON.stringify({ name: name, email: email, phone: phone }),
       });
       var initials = name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
-      document.getElementById('avatarInitials').textContent = initials;
-      document.getElementById('topbarInitial').textContent  = initials[0] || 'A';
-      document.getElementById('displayName').textContent    = name;
-      document.getElementById('topbarName').textContent     = name;
+      setTextIfExists('avatarInitials', initials);
+      setTextIfExists('topbarInitial', initials[0] || 'A');
+      setTextIfExists('displayName', name);
+      setTextIfExists('topbarName', name);
       var localUser = window.AppUtils.getLocalUser() || {};
       window.AppUtils.setLocalUser(Object.assign({}, localUser, { name: name, email: email }));
       unsavedPersonal = false;
@@ -838,6 +843,7 @@
   function setAvatarPhoto(src) {
     var img = document.getElementById('avatarImg');
     var initials = document.getElementById('avatarInitials');
+    if (!img || !initials) return;
     if (src) {
       img.src = src;
       img.style.display = 'block';
@@ -858,7 +864,8 @@
     saveBtn.disabled = true; saveBtn.style.opacity = '.5'; saveBtn.style.cursor = 'not-allowed';
 
     // Show remove button if user already has a photo
-    var hasPhoto = document.getElementById('avatarImg').style.display === 'block';
+    var avatarImg = document.getElementById('avatarImg');
+    var hasPhoto = avatarImg ? avatarImg.style.display === 'block' : false;
     document.getElementById('photoRemoveBtn').style.display = hasPhoto ? 'block' : 'none';
 
     document.getElementById('photoModal').classList.add('open');

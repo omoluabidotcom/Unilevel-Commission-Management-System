@@ -1,6 +1,6 @@
 /**
  * admin-dashboard.js
- * Loads all dashboard data from the API, applies live currency conversion,
+ * Loads all dashboard data from the API in NGN,
  * and uses min_monthly_purchase from settings for the below-minimum table.
  */
 
@@ -47,10 +47,9 @@ async function loadDashboard(){
       window.AppUtils.safeFetch('/api/commissions'),
     ]);
 
-    // minMonthlyPurchase is stored in USD — convert to display currency
-    var minUSD = Number(AppCurrency.setting('minMonthlyPurchase') || 0);
-    var minInDisplayCurrency = AppCurrency.convert(minUSD);
-    var minPurchaseDisplay = AppCurrency.fmt(minUSD, 0);
+    // NGN-only mode: values are already in display currency
+    var minInDisplayCurrency = Number(AppCurrency.setting('minMonthlyPurchase') || 0);
+    var minPurchaseDisplay = AppCurrency.fmt(minInDisplayCurrency, 0);
 
     var allUsers       = usersRes.users         || [];
     var allPurchases   = purchasesRes.purchases  || [];
@@ -79,7 +78,7 @@ async function loadDashboard(){
     animateCount(document.getElementById('statActiveDistributors'), active.length, '');
 
     var mpEl = document.getElementById('statMonthlyPurchases');
-    mpEl.textContent = AppCurrency.fmt(monthTotal); // monthTotal is in USD, fmt() converts
+    mpEl.textContent = AppCurrency.fmt(monthTotal);
 
     var cpEl = document.getElementById('statCommissionPayable');
     cpEl.textContent = AppCurrency.fmt(payable);
@@ -120,20 +119,18 @@ async function loadDashboard(){
     }
 
     // ── BELOW MINIMUM REQUIREMENT ──
-    // Build a map: userId → total purchase amount this month (stored in USD)
+    // Build a map: userId → total purchase amount this month (NGN)
     var purchaseByUser = {};
     monthPurchases.forEach(function(p){
       var uid = String(p.userId);
       purchaseByUser[uid] = (purchaseByUser[uid] || 0) + Number(p.amount || 0);
     });
 
-    // Convert purchase amounts to display currency for comparison against minInDisplayCurrency
     var belowMin = distributors
       .filter(function(u){ return u.isActive; })
       .map(function(u){
-        var amtUSD = purchaseByUser[String(u.id)] || 0;
-        var amtDisplay = AppCurrency.convert(amtUSD);
-        return { user: u, amtUSD: amtUSD, amount: amtDisplay };
+        var amt = purchaseByUser[String(u.id)] || 0;
+        return { user: u, amount: amt };
       })
       .filter(function(x){ return x.amount < minInDisplayCurrency; })
       .sort(function(a,b){ return a.amount - b.amount });
