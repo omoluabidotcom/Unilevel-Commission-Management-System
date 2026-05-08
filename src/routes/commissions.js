@@ -34,18 +34,36 @@ router.post('/generate-month', requireAuth, requireRole('admin'), async (req, re
   try {
     const period = req.body && req.body.period ? String(req.body.period).trim() : '';
     if (!period) {
-      return res.status(400).json({ message: 'period is required in format YYYY-MM' });
+      return res.status(400).json({
+        error: {
+          code: 'GENERATION_PERIOD_REQUIRED',
+          message: 'period is required in format YYYY-MM',
+          details: null,
+        },
+      });
     }
     if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) {
-      return res.status(400).json({ message: 'Invalid period format. Use YYYY-MM' });
+      return res.status(400).json({
+        error: {
+          code: 'GENERATION_INVALID_PERIOD',
+          message: 'Invalid period format. Use YYYY-MM',
+          details: { period },
+        },
+      });
     }
 
     const adminId = req.user.userId || req.user.id || null;
-    const result = await generateMonthlyCommissions({ period, generatedBy: adminId });
-    res.json({ result });
+    const summary = await generateMonthlyCommissions({ period, generatedBy: adminId });
+    res.json({ summary });
   } catch (err) {
     console.error('generateMonthlyCommissions error:', err);
-    res.status(500).json({ message: 'Failed to generate monthly commissions' });
+    res.status(err.statusCode || 500).json({
+      error: {
+        code: err.code || 'GENERATION_FAILED',
+        message: err.message || 'Failed to generate monthly commissions',
+        details: err.details || null,
+      },
+    });
   }
 });
 

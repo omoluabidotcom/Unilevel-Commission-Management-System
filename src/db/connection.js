@@ -57,6 +57,17 @@ async function ensureProfilePictureColumn() {
   }
 }
 
+async function ensureCommissionBreakdownColumn() {
+  try {
+    const pool = await getPool();
+    await pool.execute('ALTER TABLE commissions ADD COLUMN breakdown JSON');
+  } catch (err) {
+    if (err.code !== 'ER_DUP_FIELDNAME') {
+      console.warn('ensureCommissionBreakdownColumn:', err.message);
+    }
+  }
+}
+
 async function listUsers() {
   const pool = await getPool();
   const [rows] = await pool.execute(
@@ -306,15 +317,77 @@ function round2(n) {
   return Math.round(Number(n || 0) * 100) / 100;
 }
 
+function createGenerationSummary({
+  period,
+  minMonthlyPurchase,
+  commissionPercentage,
+  scannedDistributors,
+  eligibleDistributors,
+  generatedCount,
+  updatedCount,
+  skippedBelowMinimum,
+  skippedLockedStatus,
+}) {
+  return {
+    period,
+    settingsUsed: {
+      minMonthlyPurchase,
+      commissionPercentage,
+    },
+    scannedDistributors,
+    eligibleDistributors,
+    generatedCount,
+    updatedCount,
+    skippedBelowMinimum,
+    skippedLockedStatus,
+  };
+}
+
+function createGenerationError(code, message, details, statusCode) {
+  const error = new Error(message);
+  error.code = code;
+  error.details = details || null;
+  error.statusCode = statusCode || 500;
+  return error;
+}
+
 async function generateMonthlyCommissions({ period, generatedBy }) {
   const pool = await getPool();
+  await ensureCommissionBreakdownColumn();
   const settings = await getSettings();
+
+  if (!settings) {
+    throw createGenerationError(
+      'GENERATION_SETTINGS_MISSING',
+      'Commission settings are not configured',
+      null,
+      500
+    );
+  }
 
   const minMonthlyPurchase = Number(settings?.minMonthlyPurchase || 0);
   const rawPct = settings ? settings.commissionPercentage : 0;
   const commissionPercentage = typeof rawPct === 'object'
     ? Number(rawPct.level1 || 0)
     : Number(rawPct || 0);
+
+  if (!Number.isFinite(minMonthlyPurchase) || minMonthlyPurchase < 0) {
+    throw createGenerationError(
+      'GENERATION_INVALID_MINIMUM_PURCHASE',
+      'Minimum monthly purchase setting is invalid',
+      { minMonthlyPurchase: settings.minMonthlyPurchase },
+      500
+    );
+  }
+
+  if (!Number.isFinite(commissionPercentage) || commissionPercentage < 0 || commissionPercentage > 100) {
+    throw createGenerationError(
+      'GENERATION_INVALID_COMMISSION_PERCENTAGE',
+      'Commission percentage setting is invalid',
+      { commissionPercentage: rawPct },
+      500
+    );
+  }
 
   const [distributorRows] = await pool.execute(
     'SELECT id FROM users WHERE role = ?',
@@ -406,19 +479,17 @@ async function generateMonthlyCommissions({ period, generatedBy }) {
     }
   }
 
-  return {
+  return createGenerationSummary({
     period,
-    settingsUsed: {
-      minMonthlyPurchase,
-      commissionPercentage,
-    },
+    minMonthlyPurchase,
+    commissionPercentage,
     scannedDistributors,
     eligibleDistributors,
     generatedCount,
     updatedCount,
     skippedBelowMinimum,
     skippedLockedStatus,
-  };
+  });
 }
 
 async function createPurchase({ distributorName, distributorEmail, period, createdAt, amount, products, status }) {
@@ -563,6 +634,7 @@ async function updateSettings({
 
 async function listCommissionsForUser(userId, period) {
   const pool = await getPool();
+  await ensureCommissionBreakdownColumn();
   const params = [userId];
   let sql =
     'SELECT id, user_id, period, personal_amount, downline_amount, total_commission, status, paid_at, breakdown, created_at FROM commissions WHERE user_id = ?';
@@ -589,6 +661,7 @@ async function listCommissionsForUser(userId, period) {
 
 async function listAllCommissions({ period } = {}) {
   const pool = await getPool();
+  await ensureCommissionBreakdownColumn();
   const params = [];
   let sql =
     'SELECT c.id, c.user_id, c.period, c.personal_amount, c.downline_amount, c.total_commission, c.status, c.paid_at, c.breakdown, c.created_at, u.full_name, u.email ' +
@@ -922,6 +995,7 @@ async function registerDistributor({ fullName, email, phone, password, sponsorId
 module.exports = {
   getPool,
   ensureProfilePictureColumn,
+  ensureCommissionBreakdownColumn,
   findUserByEmail,
   findUserById,
   updateLastLogin,

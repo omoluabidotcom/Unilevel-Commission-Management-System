@@ -2,12 +2,21 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
 
+function sendAuthError(res, status, code, message) {
+  return res.status(status).json({
+    error: {
+      code,
+      message,
+    },
+  });
+}
+
 function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
   if (!token) {
-    return res.status(401).json({ message: 'Missing auth token' });
+    return sendAuthError(res, 401, 'AUTH_MISSING_TOKEN', 'Missing auth token');
   }
 
   try {
@@ -15,18 +24,18 @@ function requireAuth(req, res, next) {
     req.user = payload;
     next();
   } catch (err) {
-    return res.status(401).json({ message: 'Invalid token' });
+    return sendAuthError(res, 401, 'AUTH_INVALID_TOKEN', 'Invalid token');
   }
 }
 
 function requireRole(role) {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Not authenticated' });
+      return sendAuthError(res, 401, 'AUTH_NOT_AUTHENTICATED', 'Not authenticated');
     }
 
     if (req.user.role !== role) {
-      return res.status(403).json({ message: 'Insufficient permissions' });
+      return sendAuthError(res, 403, 'AUTH_INSUFFICIENT_PERMISSIONS', 'Insufficient permissions');
     }
 
     next();
