@@ -302,6 +302,125 @@ async function upsertCommission(userId, period, purchaseAmount) {
   }
 }
 
+function round2(n) {
+  return Math.round(Number(n || 0) * 100) / 100;
+}
+
+async function generateMonthlyCommissions({ period, generatedBy }) {
+  const pool = await getPool();
+  const settings = await getSettings();
+
+  const minMonthlyPurchase = Number(settings?.minMonthlyPurchase || 0);
+  const rawPct = settings ? settings.commissionPercentage : 0;
+  const commissionPercentage = typeof rawPct === 'object'
+    ? Number(rawPct.level1 || 0)
+    : Number(rawPct || 0);
+
+  const [distributorRows] = await pool.execute(
+    'SELECT id FROM users WHERE role = ?',
+    ['distributor']
+  );
+
+  const [personalRows] = await pool.execute(
+    'SELECT user_id, COALESCE(SUM(amount), 0) AS total FROM purchases WHERE period = ? GROUP BY user_id',
+    [period]
+  );
+  const personalByUser = new Map(
+    personalRows.map((r) => [String(r.user_id), Number(r.total || 0)])
+  );
+
+  const [downlineRows] = await pool.execute(
+    `SELECT u.sponsor_id AS sponsor_id, COALESCE(SUM(p.amount), 0) AS total
+     FROM purchases p
+     JOIN users u ON u.id = p.user_id
+     WHERE p.period = ? AND u.sponsor_id IS NOT NULL
+     GROUP BY u.sponsor_id`,
+    [period]
+  );
+  const downlineBySponsor = new Map(
+    downlineRows.map((r) => [String(r.sponsor_id), Number(r.total || 0)])
+  );
+
+  let scannedDistributors = 0;
+  let eligibleDistributors = 0;
+  let generatedCount = 0;
+  let updatedCount = 0;
+  let skippedBelowMinimum = 0;
+  let skippedLockedStatus = 0;
+
+  const generatedAt = new Date().toISOString();
+  const generatedById = generatedBy == null ? null : String(generatedBy);
+
+  for (const d of distributorRows) {
+    scannedDistributors++;
+    const userId = String(d.id);
+    const personalAmount = round2(personalByUser.get(userId) || 0);
+
+    // Distributor must have purchases and meet minimum threshold.
+    if (personalAmount <= 0 || personalAmount < minMonthlyPurchase) {
+      skippedBelowMinimum++;
+      continue;
+    }
+
+    eligibleDistributors++;
+
+    const downlineAmount = round2(downlineBySponsor.get(userId) || 0);
+    const baseAmount = personalAmount + downlineAmount;
+    const totalCommission = round2(baseAmount * (commissionPercentage / 100));
+    const breakdown = JSON.stringify({
+      personalBase: personalAmount,
+      downlineBase: downlineAmount,
+      commissionBase: round2(baseAmount),
+      minMonthlyPurchaseUsed: minMonthlyPurchase,
+      pctUsed: commissionPercentage,
+      generatedAt,
+      generatedBy: generatedById,
+    });
+
+    const [existing] = await pool.execute(
+      'SELECT id, status FROM commissions WHERE user_id = ? AND period = ? LIMIT 1',
+      [userId, period]
+    );
+
+    if (existing.length) {
+      const status = String(existing[0].status || 'pending');
+      if (status !== 'pending') {
+        skippedLockedStatus++;
+        continue;
+      }
+
+      await pool.execute(
+        `UPDATE commissions
+         SET personal_amount = ?, downline_amount = ?, total_commission = ?, breakdown = ?
+         WHERE user_id = ? AND period = ?`,
+        [personalAmount, downlineAmount, totalCommission, breakdown, userId, period]
+      );
+      updatedCount++;
+    } else {
+      await pool.execute(
+        `INSERT INTO commissions (user_id, period, personal_amount, downline_amount, total_commission, status, breakdown)
+         VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
+        [userId, period, personalAmount, downlineAmount, totalCommission, breakdown]
+      );
+      generatedCount++;
+    }
+  }
+
+  return {
+    period,
+    settingsUsed: {
+      minMonthlyPurchase,
+      commissionPercentage,
+    },
+    scannedDistributors,
+    eligibleDistributors,
+    generatedCount,
+    updatedCount,
+    skippedBelowMinimum,
+    skippedLockedStatus,
+  };
+}
+
 async function createPurchase({ distributorName, distributorEmail, period, createdAt, amount, products, status }) {
   const pool = await getPool();
 
@@ -323,13 +442,6 @@ async function createPurchase({ distributorName, distributorEmail, period, creat
     'INSERT INTO purchases (user_id, period, amount, product_details, status, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     [userId, period, amount, productDetails, status, createdAt]
   );
-
-  // Auto-calculate and upsert commission for this distributor+period
-  try {
-    await upsertCommission(userId, period, amount);
-  } catch(err) {
-    console.error('upsertCommission error:', err);
-  }
 
   return {
     id: String(result.insertId),
@@ -823,6 +935,7 @@ module.exports = {
   listDownlinesForUser,
   listDistributors,
   upsertCommission,
+  generateMonthlyCommissions,
   createPurchase,
   listNotifications,
   markNotificationRead,

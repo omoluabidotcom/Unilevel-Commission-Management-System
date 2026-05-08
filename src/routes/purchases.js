@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireAuth, requireRole } = require('../middleware/auth');
-const { listPurchases, createPurchase, listDistributors, listPurchasesForUser, listPurchasesForDownlines, upsertCommission } = require('../db/connection');
+const { listPurchases, createPurchase, listDistributors, listPurchasesForUser, listPurchasesForDownlines } = require('../db/connection');
 
 const router = express.Router();
 
@@ -78,22 +78,9 @@ router.get('/my-downlines', requireAuth, async (req, res) => {
 
 // Admin: recalculate commissions for all existing purchases
 router.post('/recalculate-commissions', requireAuth, requireRole('admin'), async (req, res) => {
-  try {
-    const allPurchases = await listPurchases();
-    // Group by user+period and upsert
-    const seen = new Set();
-    for (const p of allPurchases) {
-      const key = p.userId + '|' + p.period;
-      if (!seen.has(key)) {
-        seen.add(key);
-        await upsertCommission(p.userId, p.period, 0); // amount=0 since upsertCommission re-sums from DB
-      }
-    }
-    res.json({ message: `Recalculated commissions for ${seen.size} user/period combinations` });
-  } catch (err) {
-    console.error('recalculate-commissions error:', err);
-    res.status(500).json({ message: 'Failed to recalculate commissions' });
-  }
+  return res.status(410).json({
+    message: 'Deprecated. Use POST /api/commissions/generate-month with explicit period (YYYY-MM).',
+  });
 });
 
 module.exports = router;
