@@ -4,12 +4,16 @@ const { listPurchases, createPurchase, listDistributors, listPurchasesForUser, l
 
 const router = express.Router();
 
+function createListPurchasesHandler({ listPurchases: loadPurchases }) {
+  return async (req, res) => {
+    const period = req.query.period ? String(req.query.period) : undefined;
+    const purchases = await loadPurchases({ period });
+    return res.json({ purchases });
+  };
+}
+
 // Admin: list purchases (optionally filter by period 'YYYY-MM')
-router.get('/', requireAuth, requireRole('admin'), async (req, res) => {
-  const period = req.query.period ? String(req.query.period) : undefined;
-  const purchases = await listPurchases({ period });
-  res.json({ purchases });
-});
+router.get('/', requireAuth, requireRole('admin'), createListPurchasesHandler({ listPurchases }));
 
 // Admin: list all distributors for the Add Purchase dropdown
 router.get('/distributors', requireAuth, requireRole('admin'), async (req, res) => {
@@ -84,6 +88,7 @@ router.post('/recalculate-commissions', requireAuth, requireRole('admin'), async
 });
 
 module.exports = router;
+module.exports.createListPurchasesHandler = createListPurchasesHandler;
 
 
 
