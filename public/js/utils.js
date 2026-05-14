@@ -19,8 +19,10 @@ window.AppUtils.safeFetch = function (url, options = {}) {
   }).then((res) => {
     if (!res.ok) {
       return res.json().then((body) => {
-        const err = new Error(body?.message || 'Request failed');
+        const err = new Error(body?.error?.message || body?.message || 'Request failed');
         err.status = res.status;
+        err.code = body?.error?.code;
+        err.details = body?.error?.details;
         throw err;
       });
     }

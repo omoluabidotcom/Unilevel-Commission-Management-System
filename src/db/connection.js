@@ -6,6 +6,13 @@
  */
 
 const bcrypt = require('bcrypt');
+const {
+  createGenerationSummary,
+  createGenerationError,
+  validateGenerationSettings,
+  calculateCommissionForDistributor,
+  decideCommissionPersistence,
+} = require('../services/commission-generation');
 
 const dbConfig = {
   host: process.env.DB_HOST,
@@ -53,6 +60,17 @@ async function ensureProfilePictureColumn() {
     // Ignore if already correct type
     if (err.code !== 'ER_DUP_FIELDNAME') {
       console.warn('ensureProfilePictureColumn:', err.message);
+    }
+  }
+}
+
+async function ensureCommissionBreakdownColumn() {
+  try {
+    const pool = await getPool();
+    await pool.execute('ALTER TABLE commissions ADD COLUMN breakdown JSON');
+  } catch (err) {
+    if (err.code !== 'ER_DUP_FIELDNAME') {
+      console.warn('ensureCommissionBreakdownColumn:', err.message);
     }
   }
 }
@@ -242,64 +260,127 @@ async function listDistributors() {
   }));
 }
 
-// Inserts a new purchase row and returns it with its generated id
-async function upsertCommission(userId, period, purchaseAmount) {
+async function generateMonthlyCommissions({ period, generatedBy }) {
   const pool = await getPool();
-
-  // Get commission % from settings
+  await ensureCommissionBreakdownColumn();
   const settings = await getSettings();
+
+  if (!settings) {
+    throw createGenerationError(
+      'GENERATION_SETTINGS_MISSING',
+      'Commission settings are not configured',
+      null,
+      500
+    );
+  }
+
+  const minMonthlyPurchase = Number(settings?.minMonthlyPurchase || 0);
   const rawPct = settings ? settings.commissionPercentage : 0;
-  const pct = typeof rawPct === 'object' ? (rawPct.level1 || 0) : Number(rawPct || 0);
+  const commissionPercentage = typeof rawPct === 'object'
+    ? Number(rawPct.level1 || 0)
+    : Number(rawPct || 0);
 
-  // 1. Sum this distributor's OWN purchases this period
-  const [purRows] = await pool.execute(
-    'SELECT COALESCE(SUM(amount), 0) as total FROM purchases WHERE user_id = ? AND period = ?',
-    [userId, period]
-  );
-  const personalAmount = Number(purRows[0].total || 0);
-  const personalCommission = personalAmount * (pct / 100);
-
-  // 2. Sum DIRECT DOWNLINES purchases this period
-  const [dlRows] = await pool.execute(
-    'SELECT COALESCE(SUM(p.amount), 0) as total FROM purchases p JOIN users u ON u.id = p.user_id WHERE u.sponsor_id = ? AND p.period = ?',
-    [userId, period]
-  );
-  const downlineAmount = Number(dlRows[0].total || 0);
-  const downlineCommission = downlineAmount * (pct / 100);
-
-  const totalCommission = personalCommission + downlineCommission;
-  const breakdown = JSON.stringify({
-    personal: personalCommission,
-    downline: downlineCommission,
-    pct: pct,
+  validateGenerationSettings({
+    minMonthlyPurchase,
+    commissionPercentage,
+    rawCommissionPercentage: rawPct,
   });
 
-  // Upsert commission record for this distributor
-  const [existing] = await pool.execute(
-    'SELECT id FROM commissions WHERE user_id = ? AND period = ? LIMIT 1',
-    [userId, period]
+  const [distributorRows] = await pool.execute(
+    'SELECT id FROM users WHERE role = ?',
+    ['distributor']
   );
-  if (existing.length) {
-    await pool.execute(
-      `UPDATE commissions SET personal_amount = ?, downline_amount = ?, total_commission = ?, breakdown = ? WHERE user_id = ? AND period = ?`,
-      [personalAmount, downlineAmount, totalCommission, breakdown, userId, period]
+
+  const [personalRows] = await pool.execute(
+    'SELECT user_id, COALESCE(SUM(amount), 0) AS total FROM purchases WHERE period = ? GROUP BY user_id',
+    [period]
+  );
+  const personalByUser = new Map(
+    personalRows.map((r) => [String(r.user_id), Number(r.total || 0)])
+  );
+
+  const [downlineRows] = await pool.execute(
+    `SELECT u.sponsor_id AS sponsor_id, COALESCE(SUM(p.amount), 0) AS total
+     FROM purchases p
+     JOIN users u ON u.id = p.user_id
+     WHERE p.period = ? AND u.sponsor_id IS NOT NULL
+     GROUP BY u.sponsor_id`,
+    [period]
+  );
+  const downlineBySponsor = new Map(
+    downlineRows.map((r) => [String(r.sponsor_id), Number(r.total || 0)])
+  );
+
+  let scannedDistributors = 0;
+  let eligibleDistributors = 0;
+  let generatedCount = 0;
+  let updatedCount = 0;
+  let skippedBelowMinimum = 0;
+  let skippedLockedStatus = 0;
+
+  const generatedAt = new Date().toISOString();
+  const generatedById = generatedBy == null ? null : String(generatedBy);
+
+  for (const d of distributorRows) {
+    scannedDistributors++;
+    const userId = String(d.id);
+    const calculation = calculateCommissionForDistributor({
+      userId,
+      personalAmount: personalByUser.get(userId) || 0,
+      downlineAmount: downlineBySponsor.get(userId) || 0,
+      minMonthlyPurchase,
+      commissionPercentage,
+      generatedAt,
+      generatedBy,
+    });
+
+    if (!calculation.eligible) {
+      skippedBelowMinimum++;
+      continue;
+    }
+
+    eligibleDistributors++;
+
+    const [existing] = await pool.execute(
+      'SELECT id, status FROM commissions WHERE user_id = ? AND period = ? LIMIT 1',
+      [userId, period]
     );
-  } else {
-    await pool.execute(
-      `INSERT INTO commissions (user_id, period, personal_amount, downline_amount, total_commission, status, breakdown) VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
-      [userId, period, personalAmount, downlineAmount, totalCommission, breakdown]
-    );
+
+    const persistenceAction = decideCommissionPersistence(existing[0]);
+    if (persistenceAction === 'skip_locked') {
+      skippedLockedStatus++;
+      continue;
+    }
+
+    if (persistenceAction === 'update') {
+      await pool.execute(
+        `UPDATE commissions
+         SET personal_amount = ?, downline_amount = ?, total_commission = ?, breakdown = ?
+         WHERE user_id = ? AND period = ?`,
+        [calculation.personalAmount, calculation.downlineAmount, calculation.totalCommission, calculation.breakdown, userId, period]
+      );
+      updatedCount++;
+    } else {
+      await pool.execute(
+        `INSERT INTO commissions (user_id, period, personal_amount, downline_amount, total_commission, status, breakdown)
+         VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
+        [userId, period, calculation.personalAmount, calculation.downlineAmount, calculation.totalCommission, calculation.breakdown]
+      );
+      generatedCount++;
+    }
   }
 
-  // 3. Also update the UPLINE (sponsor) commission — they earn from this distributor's purchases
-  const [sponsorRows] = await pool.execute(
-    'SELECT sponsor_id FROM users WHERE id = ? LIMIT 1',
-    [userId]
-  );
-  if (sponsorRows.length && sponsorRows[0].sponsor_id) {
-    const sponsorId = sponsorRows[0].sponsor_id;
-    await upsertCommission(sponsorId, period, 0); // recursively update sponsor
-  }
+  return createGenerationSummary({
+    period,
+    minMonthlyPurchase,
+    commissionPercentage,
+    scannedDistributors,
+    eligibleDistributors,
+    generatedCount,
+    updatedCount,
+    skippedBelowMinimum,
+    skippedLockedStatus,
+  });
 }
 
 async function createPurchase({ distributorName, distributorEmail, period, createdAt, amount, products, status }) {
@@ -323,13 +404,6 @@ async function createPurchase({ distributorName, distributorEmail, period, creat
     'INSERT INTO purchases (user_id, period, amount, product_details, status, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     [userId, period, amount, productDetails, status, createdAt]
   );
-
-  // Auto-calculate and upsert commission for this distributor+period
-  try {
-    await upsertCommission(userId, period, amount);
-  } catch(err) {
-    console.error('upsertCommission error:', err);
-  }
 
   return {
     id: String(result.insertId),
@@ -451,6 +525,7 @@ async function updateSettings({
 
 async function listCommissionsForUser(userId, period) {
   const pool = await getPool();
+  await ensureCommissionBreakdownColumn();
   const params = [userId];
   let sql =
     'SELECT id, user_id, period, personal_amount, downline_amount, total_commission, status, paid_at, breakdown, created_at FROM commissions WHERE user_id = ?';
@@ -477,6 +552,7 @@ async function listCommissionsForUser(userId, period) {
 
 async function listAllCommissions({ period } = {}) {
   const pool = await getPool();
+  await ensureCommissionBreakdownColumn();
   const params = [];
   let sql =
     'SELECT c.id, c.user_id, c.period, c.personal_amount, c.downline_amount, c.total_commission, c.status, c.paid_at, c.breakdown, c.created_at, u.full_name, u.email ' +
@@ -810,6 +886,7 @@ async function registerDistributor({ fullName, email, phone, password, sponsorId
 module.exports = {
   getPool,
   ensureProfilePictureColumn,
+  ensureCommissionBreakdownColumn,
   findUserByEmail,
   findUserById,
   updateLastLogin,
@@ -822,7 +899,7 @@ module.exports = {
   listPurchasesForDownlines,
   listDownlinesForUser,
   listDistributors,
-  upsertCommission,
+  generateMonthlyCommissions,
   createPurchase,
   listNotifications,
   markNotificationRead,

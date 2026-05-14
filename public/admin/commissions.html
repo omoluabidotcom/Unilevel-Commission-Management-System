@@ -47,6 +47,34 @@
     .stat-icon-wrap.blue-bg { background:#eff6ff; }
     .stat-icon-wrap.green-bg { background:#f0fdf4; }
     .controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; animation:fadeUp .35s .05s both; }
+    .generation-card { background:linear-gradient(135deg,#f8fbff 0%,#eef5ff 100%); border:1px solid #dbe7ff; border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); display:flex; align-items:end; justify-content:space-between; gap:18px; flex-wrap:wrap; animation:fadeUp .35s .03s both; }
+    .generation-copy { display:flex; flex-direction:column; gap:6px; min-width:240px; }
+    .generation-copy h2 { font-size:17px; font-weight:700; letter-spacing:-.2px; }
+    .generation-copy p { font-size:13.5px; color:var(--text-secondary); line-height:1.5; }
+    .generation-actions { display:flex; align-items:end; gap:12px; flex-wrap:wrap; }
+    .field-label { display:block; font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+    .month-input { padding:11px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:inherit; font-size:13.5px; font-weight:500; color:var(--text-primary); background:var(--white); outline:none; min-width:170px; transition:border-color .15s,box-shadow .15s; }
+    .month-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-light); }
+    .generate-btn { display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:11px 18px; border:none; border-radius:10px; background:var(--blue); color:#fff; font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; transition:background .15s,box-shadow .15s,transform .1s; min-width:240px; }
+    .generate-btn:hover { background:#1560d8; box-shadow:0 10px 24px rgba(26,110,245,.22); transform:translateY(-1px); }
+    .generate-btn:disabled { opacity:.7; cursor:not-allowed; transform:none; box-shadow:none; }
+    .spinner { width:14px; height:14px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .summary-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px 20px; display:none; flex-direction:column; gap:14px; animation:fadeUp .25s both; }
+    .summary-card.open { display:flex; }
+    .summary-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    .summary-head h3 { font-size:16px; font-weight:700; letter-spacing:-.2px; }
+    .summary-head p { font-size:13px; color:var(--text-secondary); line-height:1.5; }
+    .summary-period { display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; background:#eff6ff; color:var(--blue); font-size:12px; font-weight:700; letter-spacing:.3px; }
+    .summary-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    .summary-metric { border:1px solid var(--border); border-radius:12px; padding:14px; background:#fbfdff; }
+    .summary-metric .label { font-size:12px; color:var(--text-secondary); font-weight:600; margin-bottom:6px; }
+    .summary-metric .value { font-size:24px; font-weight:700; letter-spacing:-.5px; }
+    .summary-detail { font-size:12px; color:var(--text-secondary); margin-top:6px; }
+    .summary-settings { display:flex; gap:10px; flex-wrap:wrap; }
+    .summary-chip { display:inline-flex; align-items:center; padding:8px 12px; border-radius:999px; background:#f8fafc; border:1px solid var(--border); font-size:12.5px; color:var(--text-secondary); font-weight:600; }
+    .summary-empty { color:var(--text-muted); }
+    @media (max-width: 900px) { .summary-grid { grid-template-columns:1fr; } }
     .search-wrap { flex:1; min-width:220px; position:relative; }
     .search-wrap svg { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); pointer-events:none; }
     .search-input { width:100%; padding:11px 16px 11px 42px; border:1.5px solid var(--border); border-radius:10px; font-family:inherit; font-size:13.5px; color:var(--text-primary); background:var(--white); outline:none; transition:border-color .15s,box-shadow .15s; }
@@ -129,6 +157,40 @@
   <main class="content">
     <div class="stat-grid"><div class="stat-card"><div class="stat-left"><div class="label">Pending Commissions</div><div class="value" id="statPending">₦0.00</div><div class="sub orange" id="subPending">0 commissions pending</div></div><div class="stat-icon-wrap orange-bg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-card"><div class="stat-left"><div class="label">Approved Commissions</div><div class="value" id="statApproved">₦0.00</div><div class="sub blue" id="subApproved">0 commissions approved</div></div><div class="stat-icon-wrap blue-bg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div><div class="stat-card"><div class="stat-left"><div class="label">Paid Commissions</div><div class="value" id="statPaid">₦0.00</div><div class="sub green" id="subPaid">0 commission paid</div></div><div class="stat-icon-wrap green-bg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div></div>
     <div id="commRateInfo" style="font-size:13px;color:var(--text-secondary);background:var(--white);border:1px solid var(--border);border-radius:10px;padding:10px 18px;animation:fadeUp .35s .07s both;"></div>
+    <section class="generation-card">
+      <div class="generation-copy">
+        <h2>Run Monthly Commission Generation</h2>
+        <p>Select a month, confirm the run, and refresh the grid with the generated results for that month.</p>
+      </div>
+      <div class="generation-actions">
+        <div>
+          <label class="field-label" for="generationMonth">Generation Month</label>
+          <input class="month-input" id="generationMonth" type="month" />
+        </div>
+        <button class="generate-btn" id="generateMonthBtn" type="button">Generate Month's Commission</button>
+      </div>
+    </section>
+    <section class="summary-card" id="generationSummary" aria-live="polite">
+      <div class="summary-head">
+        <div>
+          <h3>Latest Generation Summary</h3>
+          <p id="summaryDescription" class="summary-empty">No generation run yet in this session.</p>
+        </div>
+        <span class="summary-period" id="summaryPeriod">No month selected</span>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-metric"><div class="label">Scanned</div><div class="value" id="summaryScanned">0</div><div class="summary-detail">Eligible distributors checked for the selected month.</div></div>
+        <div class="summary-metric"><div class="label">Eligible</div><div class="value" id="summaryEligible">0</div><div class="summary-detail">Met the minimum personal monthly purchase threshold.</div></div>
+        <div class="summary-metric"><div class="label">Inserted / Updated</div><div class="value" id="summaryChanged">0 / 0</div><div class="summary-detail">New pending rows created and existing pending rows updated.</div></div>
+        <div class="summary-metric"><div class="label">Skipped Below Minimum</div><div class="value" id="summaryBelowMinimum">0</div><div class="summary-detail">Distributors whose own monthly purchase did not qualify.</div></div>
+        <div class="summary-metric"><div class="label">Skipped Locked</div><div class="value" id="summaryLocked">0</div><div class="summary-detail">Approved or paid rows left unchanged on rerun.</div></div>
+        <div class="summary-metric"><div class="label">Configured Rate</div><div class="value" id="summaryPercentage">0%</div><div class="summary-detail">Commission percentage snapshot used for this run.</div></div>
+      </div>
+      <div class="summary-settings">
+        <span class="summary-chip" id="summaryMinimum">Minimum: ₦0.00</span>
+        <span class="summary-chip" id="summaryMonthChip">Reloaded month: none</span>
+      </div>
+    </section>
     <div class="controls"><div class="search-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" id="searchInput" type="text" placeholder="Search by name..."/></div><div class="select-wrap"><select id="statusFilter"><option value="">All Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="paid">Paid</option><option value="rejected">Rejected</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div><div class="select-wrap"><select id="periodFilter"><option value="this-month">This Month</option><option value="last-month">Last Month</option><option value="last-3">Last 3 Months</option><option value="all">All Time</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>
     <div><div class="table-header" style="margin-bottom:12px;"><h2 class="table-title">All Commissions</h2><span class="table-total" id="tableTotal">Total: 0 commissions</span></div><div class="table-card"><table><thead><tr><th data-col="name">Distributor Name <span class="si">↑</span></th><th data-col="month">Month <span class="si">↑</span></th><th data-col="purchase">Purchase Amount <span class="si">↑</span></th><th data-col="pct">Commission % <span class="si">↑</span></th><th data-col="amount">Commission Amount <span class="si">↑</span></th><th data-col="status">Status <span class="si">↑</span></th><th>Actions</th></tr></thead><tbody id="tableBody"></tbody></table><div id="pagination"></div></div></div>
   </main>
@@ -143,18 +205,87 @@
   let currentPage = 1;
   let filtered = [];
   let pendingAction = null;
+  let selectedGenerationMonth = '';
+  let isGenerating = false;
 
   function fmt(n){ return AppCurrency.fmt(n); }
   function cap(s){return s?s[0].toUpperCase()+s.slice(1):'';}
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-  function toast(msg){
+  function toast(msg, kind){
     const wrap=document.getElementById('toastWrap');
     const el=document.createElement('div');
-    el.className='toast success';
-    el.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'+esc(msg);
+    const isSuccess=(kind||'success')==='success';
+    el.className='toast '+(isSuccess?'success':'error');
+    el.innerHTML=(isSuccess
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>')
+      +esc(msg);
     wrap.appendChild(el);
     setTimeout(()=>{el.style.animation='slideOut .3s both';setTimeout(()=>el.remove(),300);},3000);
+  }
+
+  function setGenerateButtonState(loading){
+    isGenerating=loading;
+    const btn=document.getElementById('generateMonthBtn');
+    btn.disabled=loading;
+    btn.innerHTML=loading
+      ? '<span class="spinner" aria-hidden="true"></span><span>Generating...</span>'
+      : "Generate Month's Commission";
+  }
+
+  function updateSummary(summary){
+    const panel=document.getElementById('generationSummary');
+    panel.classList.add('open');
+    document.getElementById('summaryPeriod').textContent=summary.period || 'No month selected';
+    document.getElementById('summaryScanned').textContent=String(summary.scannedDistributors || 0);
+    document.getElementById('summaryEligible').textContent=String(summary.eligibleDistributors || 0);
+    document.getElementById('summaryChanged').textContent=String(summary.generatedCount || 0)+' / '+String(summary.updatedCount || 0);
+    document.getElementById('summaryBelowMinimum').textContent=String(summary.skippedBelowMinimum || 0);
+    document.getElementById('summaryLocked').textContent=String(summary.skippedLockedStatus || 0);
+    document.getElementById('summaryPercentage').textContent=Number(summary.settingsUsed && summary.settingsUsed.commissionPercentage || 0).toFixed(2)+'%';
+    document.getElementById('summaryMinimum').textContent='Minimum: '+fmt(Number(summary.settingsUsed && summary.settingsUsed.minMonthlyPurchase || 0));
+    document.getElementById('summaryMonthChip').textContent='Reloaded month: '+(summary.period || 'none');
+    document.getElementById('summaryDescription').textContent=
+      'Generated commissions for '+(summary.period || 'the selected month')+
+      '. '+String(summary.generatedCount || 0)+' new rows were created and '+String(summary.updatedCount || 0)+' pending rows were refreshed.';
+  }
+
+  function openGenerateConfirm(){
+    const period=document.getElementById('generationMonth').value.trim();
+    if(!period){
+      toast('Select a month before generating commissions.','error');
+      return;
+    }
+    selectedGenerationMonth=period;
+    document.getElementById('confirmIcon').className='confirm-icon blue';
+    document.getElementById('confirmIcon').innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>';
+    document.getElementById('confirmTitle').textContent="Generate Month's Commission";
+    document.getElementById('confirmMsg').textContent='Run commission generation for '+period+' and refresh the grid with the resulting records?';
+    const confirmBtn=document.getElementById('confirmBtn');
+    confirmBtn.className='btn-confirm blue';
+    confirmBtn.textContent='Confirm Generation';
+    confirmBtn.onclick=executeGeneration;
+    document.getElementById('confirmModal').classList.add('open');
+  }
+
+  async function executeGeneration(){
+    if(isGenerating || !selectedGenerationMonth) return;
+    closeModal();
+    setGenerateButtonState(true);
+    try{
+      const data=await window.AppUtils.safeFetch('/api/commissions/generate-month',{
+        method:'POST',
+        body:JSON.stringify({ period:selectedGenerationMonth })
+      });
+      updateSummary(data.summary || {});
+      toast('Commission generation completed for '+selectedGenerationMonth+'.');
+      await loadCommissions(selectedGenerationMonth, { preserveMonth:true });
+    }catch(e){
+      toast(e.message || 'Failed to generate commissions.','error');
+    }finally{
+      setGenerateButtonState(false);
+    }
   }
 
   function closeModal(){
@@ -295,15 +426,18 @@
   document.getElementById('statusFilter').addEventListener('change',applyFilters);
   document.getElementById('periodFilter').addEventListener('change',applyFilters);
 
-  async function loadCommissions(){
+  async function loadCommissions(period, options){
+    options=options||{};
     await AppCurrency.load();
+    const effectivePeriod=period || '';
+    const params=effectivePeriod ? '?period='+encodeURIComponent(effectivePeriod) : '';
 
     // Get commission % from settings (falls back to 0 if not set)
     var settingsPct = Number(AppCurrency.setting('commissionPercentage') || 0);
     if(typeof settingsPct === 'object') settingsPct = settingsPct.level1 || 0;
 
     try{
-      const data=await window.AppUtils.safeFetch('/api/commissions');
+      const data=await window.AppUtils.safeFetch('/api/commissions'+params);
       commissions=data.commissions.map(c=>{
         const purchase=c.personalAmount+c.downlineAmount;
         // Use settings commission % — fall back to DB-calculated if settings is 0
@@ -324,15 +458,20 @@
       var rateEl = document.getElementById('commRateInfo');
       if(rateEl){
         var minDisplay = AppCurrency.fmt(Number(AppCurrency.setting('minMonthlyPurchase') || 0), 0);
-        rateEl.textContent = 'Active commission rate: ' + settingsPct.toFixed(1) + '% of purchase amount — Min monthly purchase: ' + minDisplay;
+        rateEl.textContent = 'Active commission rate: ' + settingsPct.toFixed(1) + '% of purchase amount — Min monthly purchase: ' + minDisplay + (effectivePeriod ? ' — Viewing month: ' + effectivePeriod : '');
+      }
+      if(effectivePeriod){
+        document.getElementById('periodFilter').value='all';
       }
       applyFilters();
     }catch(e){
-      toast(e.message||'Failed to load commissions');
+      toast(e.message||'Failed to load commissions','error');
     }
   }
 
-  window.addEventListener('DOMContentLoaded', loadCommissions);
+  document.getElementById('generateMonthBtn').addEventListener('click',openGenerateConfirm);
+
+  window.addEventListener('DOMContentLoaded',()=>loadCommissions());
 </script>
 </body>
 </html>

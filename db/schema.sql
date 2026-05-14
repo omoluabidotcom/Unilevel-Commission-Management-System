@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS commissions (
   downline_amount DECIMAL(12,2) DEFAULT 0,
   total_commission DECIMAL(12,2) NOT NULL,
   status ENUM('pending', 'approved', 'paid') DEFAULT 'pending',
+  breakdown JSON DEFAULT NULL,
   paid_at TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uniq_user_period (user_id, period),
