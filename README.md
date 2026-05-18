@@ -1,115 +1,224 @@
-# Unilevel Commission System
+# Unilevel Commission Management System
 
-This repo holds a lightweight Unilevel commission tracker built with vanilla Node.js/Express serving a collection of static distributor/admin dashboards. The goal is to keep the experience simple yet extendable: the backend provides placeholder API routes for authentication, user info, commissions, and settings, while the `public/` folder hosts the distributor experience (dashboard, downlines tree, commissions, notifications, profile) plus an admin shell.
+Live Application: https://unilevel-commission-management-system.onrender.com/
 
-## Tech stack
+A production-style unilevel commission platform built with Node.js, Express, MySQL, and static admin/distributor dashboards.
+It supports authentication, profile management, purchases, downline visibility, commission generation, and settings management.
 
-- **Runtime:** Node.js + Express
-- **Routing/middleware:** `src/routes/{auth,users,commissions,settings}` + `src/middleware/auth`
-- **Data layer:** `src/db/connection.js` contains in-memory seeds; `db/schema.sql` documents a relational schema for future migration to MySQL/Postgres.
-- **Static UI:** Plain HTML/CSS/JS under `public/` plus script utilities in `public/js/`.
+## What This Project Does
 
-## Getting started
+This system provides:
 
-1. Install dependencies:
+- Admin workflows:
+  - Manage users and distributors
+  - Record purchases
+  - View all commissions
+  - Generate monthly commissions for a specific period
+  - Manage system settings
+  - View and manage notifications
+- Distributor workflows:
+  - Login and view dashboard data
+  - View own commissions
+  - View direct downline users and purchases
+  - Update profile, password, photo, bank details, and next-of-kin details
+  - View notifications
+
+## Live URL
+
+- App: https://unilevel-commission-management-system.onrender.com/
+- Health check: https://unilevel-commission-management-system.onrender.com/health
+
+## Tech Stack
+
+- Backend: Node.js + Express
+- Database: MySQL
+- Auth: JWT Bearer tokens
+- Password hashing: bcrypt and bcryptjs
+- Frontend: HTML, CSS, vanilla JavaScript
+- Runtime config: dotenv
+
+## Project Structure
+
+- `server.js`: Express entry point, middleware, static files, API route mounting, health route
+- `src/db/connection.js`: MySQL data access layer and commission generation database operations
+- `src/middleware/auth.js`: JWT authentication and role-based authorization
+- `src/routes/auth.js`: login and registration
+- `src/routes/users.js`: user CRUD, current user profile, downlines
+- `src/routes/commissions.js`: commission listing and monthly generation
+- `src/routes/purchases.js`: purchase listing and creation
+- `src/routes/settings.js`: public/admin settings APIs
+- `src/routes/notifications.js`: notifications APIs
+- `src/routes/profile.js`: profile, password, photo, bank, next-of-kin APIs
+- `db/schema.sql`: baseline SQL schema and seed users
+- `scripts/backfill-commissions.js`: historical commission generation utility
+- `test/commission-generation.test.js`: service logic tests
+- `test/commissions-route.test.js`: route behavior tests
+
+## Prerequisites
+
+- Node.js 18+ recommended
+- MySQL 8+ recommended
+- npm
+
+## Environment Variables
+
+Required for DB-backed runtime:
+
+- `PORT` (optional, default is platform-provided or 3000 locally)
+- `JWT_SECRET`
+- `JWT_EXPIRES_IN` (optional, default 1h)
+- `DB_HOST`
+- `DB_PORT` (optional, default 3306)
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+
+Example values:
+
+```env
+PORT=3000
+JWT_SECRET=change-this-in-production
+JWT_EXPIRES_IN=1h
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=yourpassword
+DB_NAME=unilevel_db
+```
+
+## Local Development Setup
+
+1. Install dependencies
 
 ```bash
 npm install
 ```
 
-2. Create your environment file:
+2. Configure environment variables
 
-```bash
-copy .env.example .env
-```
+Create a `.env` file in the project root and set DB and JWT values.
 
-3. (Optional) If you’re using MySQL, create a database and run the schema in `db/schema.sql`.
+3. Initialize database
 
-4. Run in development mode:
+Run SQL from `db/schema.sql` on your MySQL database.
+
+4. Start development server
 
 ```bash
 npm run dev
 ```
 
-3. Open http://localhost:3000 in a browser. Use the seeded credentials from `db/schema.sql`/`src/db/connection.js`, e.g. `distributor@example.com` / `password`.
+5. Start production mode locally
 
-### Environment
+```bash
+npm start
+```
 
-Environment variables (dotenv already loaded in `server.js`):
+6. Run tests
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `PORT` | `3000` | TCP port binding for Express |
-| `JWT_SECRET` | `change-me` | Signing secret for login tokens |
-| `JWT_EXPIRES_IN` | `1h` | Token expiration |
+```bash
+npm test
+```
 
-Create a `.env` (or use `.env.example`) as needed to override these.
+## Database Setup Notes for Render
 
-## Project structure
+If your Render database name is `unilevel_db`, ensure the app uses:
 
-- `server.js`: Express entry point, static asset hosting, and route mounting.
-- `src/routes/`: API endpoints under `/api`.  
-  - `auth.js`: login (issues JWT).  
-  - `users.js`: `/api/users/me` plus placeholder admin list.  
-  - `commissions.js` & `settings.js`: guarded by authentication and role checks.
-- `src/middleware/auth.js`: JWT validation + role-check helper.
-- `src/db/connection.js`: temporary user list & lookup helpers.
-- `public/`: distributor & admin UI.
-  - `public/distributor/`: fully self-contained single-file pages (`dashboard.html`, `my-downlines.html`, `my-commissions.html`, `notifications.html`, `profile.html`) that share sidebar/navigator logic plus inline scripts for stats, filtering, sorting, and toast feedback.
-  - `public/js/`: shared scripts (`tree.js`, `utils.js`) consumed by older sample pages.
-  - `public/css/custom.css`: baseline styles referenced by legacy distributor landing pages.
-- `db/schema.sql`: normalized schema for users, purchases, commissions, settings, plus seed data.
+- `DB_NAME=unilevel_db`
 
-## Distributor experience
+If you import `db/schema.sql`, make sure tables are created in the same DB your app points to.
+If needed, remove or adjust the `CREATE DATABASE` and `USE` statements before running SQL.
 
-Each distributor page now uses a consistent sidebar (Dashboard, Downlines, Commission History, Notifications, Profile + red Logout button) and implements `confirmLogout(event)` to redirect to `../index.html`. Key behaviors:
+## API Summary
 
-- **Dashboard:** hero stat cards, canvas chart rendering logic, recent activity table, and responsive nav state.
-- **My Downlines:** sortable table, search filter, per-downline commission calculations, and avatar colors.
-- **Commission History:** sortable monthly breakdown table with badges and totals.
-- **Notifications:** grouped unread/earlier lists, mark-as-read behavior, toast to confirm actions, and nav badge/dot updates.
-- **Profile:** forms for personal info, password, bank details, validation feedback, password strength meter, and toast notifications.
+Base path: `/api`
 
-## Admin experience
+- Public routes:
+  - `POST /api/auth/login`
+  - `POST /api/auth/register`
+  - `GET /api/settings/public`
+  - `GET /health`
+- Authenticated routes:
+  - `GET /api/users/me`
+  - `GET /api/users/me/downlines`
+  - `GET /api/purchases/me`
+  - `GET /api/purchases/my-downlines`
+  - `GET /api/commissions/me`
+  - `GET /api/profile`
+  - `PUT /api/profile`
+  - `PUT /api/profile/password`
+  - `PUT /api/profile/photo`
+  - `DELETE /api/profile/photo`
+  - `PUT /api/profile/bank`
+  - `PUT /api/profile/next-of-kin`
+- Admin-only routes:
+  - `GET /api/users`
+  - `POST /api/users`
+  - `PUT /api/users/:id`
+  - `DELETE /api/users/:id`
+  - `GET /api/purchases`
+  - `POST /api/purchases`
+  - `GET /api/purchases/distributors`
+  - `GET /api/commissions`
+  - `POST /api/commissions/generate-month`
+  - `GET /api/settings`
+  - `PUT /api/settings`
+  - `GET /api/notifications`
+  - `POST /api/notifications/:id/read`
+  - `POST /api/notifications/read-all`
 
-`public/admin/` mirrors the dashboard-first pattern; see `dashboard.html` plus accompanying scripts in `public/js/`. Admin-specific utilities (menu builder, distributor table, etc.) remain static for now.
+Auth format:
 
-## API contract (placeholder)
+- `Authorization: Bearer <your-jwt-token>`
 
-| Route | Description | Auth |
-| --- | --- | --- |
-| `POST /api/auth/login` | Returns JWT + user payload from `src/db/connection.js` | Public |
-| `GET /api/users/me` | Returns authenticated user info | Requires JWT |
-| `GET /api/users` | Admin-only placeholder | Requires `admin` role |
-| `GET /api/commissions` | Returns fake commission list | Requires JWT |
-| `GET /api/settings` | Returns sample settings | Requires JWT + `admin` |
+## Commission Generation Behavior
 
-Authentication flows rely on the `Authorization: Bearer <token>` header and `src/middleware/auth.js`.
+Monthly generation endpoint:
 
-## Database schema
+- `POST /api/commissions/generate-month`
 
-`db/schema.sql` defines:
+Request body:
 
-- `users`: admin/distributor accounts with sponsor relationships, indexed for email/sponsor lookups.
-- `purchases`: monthly volume per user/period.
-- `commissions`: pre-calculated earnings with status (`pending`, `approved`, `paid`).
-- `settings`: global commission configuration, including structured JSON percent rules.
+```json
+{
+  "period": "YYYY-MM"
+}
+```
 
-## Working on the project
+High-level rules:
 
-1. **Adding data-backed APIs:** replace `src/db/connection.js` with a real database client (MySQL/Postgres) and implement migrations using `db/schema.sql` as reference.
-2. **Refining distributor UI:** break single-file pages into templated components (e.g., via a build tool) once you add authentication/session management.
-3. **Testing ideas:** no automated suite yet; add Jest/Mocha for backend logic and a simple Puppeteer/Playwright check for key UI flows once the stack matures.
+- Reads settings and commission percentage
+- Scans distributor purchases for the requested month
+- Applies eligibility threshold from settings
+- Inserts or updates pending commission records
+- Preserves approved/paid records from overwrite
 
-## Deployment recommendations
+## Deployment
 
-- Serve `server.js` on Node 18+.
-- Point `PORT` to the desired binding or rely on runtime injection (platform-specific).
-- For static asset caching, consider placing `public/` behind a CDN and use the Express server only for the API.
-- Store `JWT_SECRET` securely (Vault/Env) when deploying to production.
+Render web service configuration:
+
+- Build command: `npm install`
+- Start command: `node server.js`
+- Environment: Node
+- Add required DB and JWT environment variables
+
+Post-deploy checks:
+
+1. Open `/health`
+2. Login with seed admin
+3. Open admin pages that call users, purchases, commissions, settings APIs
+4. Verify database tables and columns match runtime expectations
 
 ## Troubleshooting
 
-- `Error: Missing auth token` — ensure the client sets `Authorization` header.
-- `EADDRINUSE` on startup — `server.js` already retries on the next port.
-- `index.html` loads blank? check browser console: the repo currently serves static pages; refresh your build after editing the single-file HTML assets.
+Common issue: Missing auth token
+
+- Cause: Request sent without `Authorization` header.
+- Fix: Send Bearer token from login response.
+
+## Security Notes
+
+- Change `JWT_SECRET` in production
+- Do not use default seed passwords in production
+- Restrict CORS origins for production
+- Use HTTPS in all environments
